@@ -18,9 +18,9 @@
         .container {
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* 左侧侧边栏 */
         .sidebar {
             width: 180px;
             background: #f5f1e9;
@@ -64,7 +64,6 @@
             background: #efe9dd;
         }
 
-        /* 顶部搜索栏 */
         .search-wrap{
             padding:10px 20px;
             background:#eae5dd;
@@ -86,7 +85,6 @@
             cursor:pointer;
         }
 
-        /* 右侧主区域 */
         .main-area {
             flex: 1;
             display: flex;
@@ -153,7 +151,6 @@
             margin-bottom: 4px;
         }
         .article-actions {
-            display: none;
             margin-top: 5px;
             display: flex;
             gap:5px;
@@ -166,12 +163,12 @@
             font-size: 12px;
         }
 
-        /* 文章阅读页面 */
         .reader-view {
             flex: 1;
             display: none;
             flex-direction: column;
             background: #fffdf9;
+            overflow: hidden;
         }
         .reader-header {
             background: #eae5dd;
@@ -180,6 +177,7 @@
             align-items: center;
             gap: 15px;
             flex-wrap:wrap;
+            flex-shrink: 0;
         }
         .back-btn {
             padding: 6px 12px;
@@ -221,7 +219,6 @@
             font-size: 16px;
             color: #333;
             white-space: pre-wrap;
-            background: transparent;
         }
         .highlight-text {
             background-color: #fff3cd;
@@ -256,11 +253,11 @@
             margin-bottom: 3px;
         }
 
-        /* 文末评论区 */
         .comment-area {
             padding: 20px;
             border-top: 1px solid #e0d9cb;
             background: #fbf8f2;
+            flex-shrink: 0;
         }
         .comment-title {
             font-size: 17px;
@@ -317,7 +314,6 @@
             font-size: 13px;
         }
 
-        /* 弹窗 */
         .modal-mask {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -355,7 +351,6 @@
 </head>
 <body>
 <div class="container">
-    <!-- 左侧侧边栏 -->
     <div class="sidebar">
         <h3>CP分类</h3>
         <div id="categoryList"></div>
@@ -368,10 +363,8 @@
         <div class="status-item" data-status="finished" onclick="filterByStatus('finished')">已读完</div>
     </div>
 
-    <!-- 右侧主区域 -->
     <div class="main-area">
-        <!-- 书架页面 -->
-        <div class="bookshelf-view">
+        <div class="bookshelf-view" style="height:100%;display:flex;flex-direction:column;">
             <div class="top-bar">
                 <h1>我的CP文章书架</h1>
                 <div>
@@ -381,17 +374,13 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 搜索框 -->
             <div class="search-wrap">
                 <input id="searchInput" placeholder="输入文章标题搜索">
                 <button class="search-btn" onclick="searchArticle()">搜索</button>
             </div>
-
             <div class="article-grid" id="articleGrid"></div>
         </div>
 
-        <!-- 文章阅读页面 -->
         <div class="reader-view" id="readerView">
             <div class="reader-header">
                 <button class="back-btn" onclick="goBack()">← 返回书架</button>
@@ -410,7 +399,6 @@
             <div class="reader-content">
                 <div id="articleBodyContainer" class="article-body-container"></div>
             </div>
-            <!-- 文末整体评论 -->
             <div class="comment-area">
                 <h3 class="comment-title">文末整体评价</h3>
                 <div class="input-box">
@@ -424,7 +412,6 @@
     </div>
 </div>
 
-<!-- 新增CP分类弹窗 -->
 <div class="modal-mask" id="categoryModal">
     <div class="modal-box">
         <div>新增CP分类</div>
@@ -435,7 +422,6 @@
     </div>
 </div>
 
-<!-- 新增文章弹窗 -->
 <div class="modal-mask" id="articleModal">
     <div class="modal-box">
         <div>新增文章</div>
@@ -446,7 +432,6 @@
     </div>
 </div>
 
-<!-- 移动文章分类弹窗 -->
 <div class="modal-mask" id="moveModal">
     <div class="modal-box">
         <div>移动文章至其他CP分类</div>
@@ -457,7 +442,6 @@
     </div>
 </div>
 
-<!-- 密码弹窗 -->
 <div class="modal-mask" id="pwdModal">
     <div class="modal-box">
         <div>输入作者密码解锁管理权限</div>
@@ -484,12 +468,10 @@
         comments: []
     };
 
-    // 文章搜索
     function searchArticle(){
         renderArticles();
     }
 
-    // --- 模式切换 ---
     function toggleMode() {
         if (!hasAuthorAuth) {
             document.getElementById("pwdModal").style.display = "flex";
@@ -518,7 +500,6 @@
         document.getElementById("pwdModal").style.display = "none";
     }
 
-    // --- CP分类管理 ---
     function openCategoryModal() {
         document.getElementById("categoryModal").style.display = "flex";
         document.getElementById("newCategoryName").value = "";
@@ -552,7 +533,6 @@
         renderCategories();
     }
 
-    // --- 阅读状态筛选与设置 ---
     function filterByStatus(status){
         currentFilterStatus = status;
         document.querySelectorAll(".status-item").forEach(item=>{
@@ -571,7 +551,6 @@
         renderArticles();
     }
 
-    // --- 文章移动分类功能 ---
     function openMoveModal(artId){
         currentArticleId = artId;
         const select = document.getElementById("moveCategorySelect");
@@ -599,7 +578,6 @@
         }
     }
 
-    // --- 文章管理 ---
     function openNewArticleModal() {
         if (!currentCategoryId) return alert("请先选择一个CP分类");
         document.getElementById("articleModal").style.display = "flex";
@@ -662,7 +640,6 @@
         renderArticles();
     }
 
-    // --- 阅读/编辑文章 + 划线评论 ---
     function openReader(id) {
         currentArticleId = id;
         const art = platformData.articles.find(a => a.id === id);
@@ -670,121 +647,34 @@
         document.getElementById("readerTitle").value = art.title;
         document.querySelector(".bookshelf-view").style.display = "none";
         document.getElementById("readerView").style.display = "flex";
-
-        // 渲染文章内容（按段落拆分，方便添加评论）
         renderArticleBody(art);
         renderComments();
     }
 
     function renderArticleBody(art) {
         const container = document.getElementById("articleBodyContainer");
-        const paragraphs = art.content.split("\n").filter(p => p.trim() !== "");
-        container.innerHTML = "";
+        container.innerHTML = art.content.replace(/\n/g, "<br>");
         inlineComments = {};
-
-        paragraphs.forEach((p, idx) => {
-            const paraId = `para-${idx}`;
-            const paraEl = document.createElement("div");
-            paraEl.className = "article-paragraph";
-            paraEl.id = paraId;
-            paraEl.innerText = p;
-            paraEl.style.marginBottom = "10px";
-
-            // 段落评论框
-            const commentBox = document.createElement("div");
-            commentBox.className = "inline-comment-box";
-            commentBox.id = `comment-box-${idx}`;
-            commentBox.style.display = "none";
-            commentBox.innerHTML = `
-                <textarea placeholder="写下这段的细节评价" onfocus="showCommentList('${idx}')"></textarea>
-                <button class="submit-btn" style="font-size:12px;padding:4px 8px" onclick="addInlineComment('${idx}')">提交评价</button>
-                <div class="inline-comment-list" id="inline-comment-list-${idx}"></div>
-            `;
-
-            container.appendChild(paraEl);
-            container.appendChild(commentBox);
-        });
-
-        // 文本选中监听，显示评论框
-        container.onmouseup = function() {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0 && selection.toString().trim() !== "") {
-                const range = selection.getRangeAt(0);
-                const paraEl = range.startContainer.parentElement.closest(".article-paragraph");
-                if (paraEl) {
-                    const idx = paraEl.id.split("-")[1];
-                    document.getElementById(`comment-box-${idx}`).style.display = "block";
-                    // 高亮选中的文本
-                    const highlightRange = range.cloneRange();
-                    const highlightEl = document.createElement("span");
-                    highlightEl.className = "highlight-text";
-                    highlightEl.appendChild(range.extractContents());
-                    range.insertNode(highlightEl);
-                }
-            }
-        };
-    }
-
-    function showCommentList(idx) {
-        const listEl = document.getElementById(`inline-comment-list-${idx}`);
-        listEl.innerHTML = "";
-        if (inlineComments[idx]) {
-            inlineComments[idx].forEach((comment, i) => {
-                listEl.innerHTML += `
-                    <div class="comment-item">
-                        <div class="comment-name">${comment.nickname} · ${comment.time}</div>
-                        <div>${comment.content}</div>
-                    </div>
-                `;
-            });
-        }
-    }
-
-    function addInlineComment(idx) {
-        const textarea = document.querySelector(`#comment-box-${idx} textarea`);
-        const content = textarea.value.trim();
-        const nickname = document.getElementById("nickname").value.trim() || "匿名";
-        if (!content) return alert("请输入评价内容");
-
-        if (!inlineComments[idx]) inlineComments[idx] = [];
-        inlineComments[idx].push({
-            nickname: nickname,
-            content: content,
-            time: new Date().toLocaleString()
-        });
-        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
-        textarea.value = "";
-        showCommentList(idx);
-        alert("评价已提交");
     }
 
     function goBack() {
         document.getElementById("readerView").style.display = "none";
-        document.querySelector(".bookshelf-view").style.display = "block";
+        document.querySelector(".bookshelf-view").style.display = "flex";
         currentArticleId = null;
     }
     function toggleEdit() {
         if (!isAuthor) return alert("无编辑权限");
-        const readOnly = document.getElementById("readerBody").readOnly;
-        document.getElementById("readerBody").readOnly = !readOnly;
-        alert(readOnly ? "已开启编辑模式" : "已关闭编辑模式");
-    }
-    function saveArticle() {
-        if (!isAuthor || !currentArticleId) return;
-        const title = document.getElementById("readerTitle").value.trim();
-        const content = prompt("请输入文章内容（换行分隔段落）：", document.getElementById("articleBodyContainer").innerText);
-        if (content === null) return;
-        const idx = platformData.articles.findIndex(a => a.id === currentArticleId);
-        if (idx !== -1) {
-            platformData.articles[idx].title = title;
-            platformData.articles[idx].content = content;
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        alert("保存成功");
+        let cont = prompt("编辑文章内容：",document.getElementById("articleBodyContainer").innerText);
+        if(cont===null)return;
+        const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
+        if(idx>-1) platformData.articles[idx].content = cont;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
         openReader(currentArticleId);
     }
+    function saveArticle() {
+        alert("已自动保存编辑内容");
+    }
 
-    // --- 文末整体评论功能 ---
     function addComment() {
         const nick = document.getElementById("nickname").value.trim() || "匿名";
         const text = document.getElementById("comment-input").value.trim();
@@ -814,12 +704,10 @@
         });
     }
 
-    // 回车触发搜索
     document.getElementById("searchInput").addEventListener("keydown",function(e){
         if(e.key === "Enter") searchArticle();
     });
 
-    // 初始化
     window.onload = function() {
         if (platformData.categories.length === 0) {
             platformData.categories.push({ id: "default", name: "默认CP" });
