@@ -20,7 +20,7 @@
             height: 100vh;
         }
 
-        /* 左侧CP分类栏 */
+        /* 左侧侧边栏 */
         .sidebar {
             width: 180px;
             background: #f5f1e9;
@@ -30,11 +30,12 @@
         }
         .sidebar h3 {
             font-size: 16px;
-            margin-bottom: 15px;
+            margin: 15px 0 10px;
             color: #554b3d;
             font-weight: normal;
         }
-        .category-item {
+        .sidebar h3:first-child{margin-top:0;}
+        .category-item, .status-item {
             padding: 8px 10px;
             margin-bottom: 8px;
             background: #fffdf9;
@@ -43,7 +44,8 @@
             font-size: 14px;
             border: 1px solid transparent;
         }
-        .category-item:hover, .category-item.active {
+        .category-item:hover, .category-item.active,
+        .status-item:hover, .status-item.active {
             border-color: #c9c2b4;
             background: #efe9dd;
         }
@@ -111,12 +113,14 @@
         }
         .article-cover {
             height: 180px;
-            background: linear-gradient(135deg, #e8e2d5, #fffdf9);
+            background: #f8f5ee;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #665845;
-            font-size: 14px;
+            color: #443c30;
+            font-size: 15px;
+            text-align: center;
+            padding: 10px;
         }
         .article-info {
             padding: 10px;
@@ -160,6 +164,18 @@
             color: #443c30;
             cursor: pointer;
             font-size: 14px;
+        }
+        .status-set-box{
+            display:flex;
+            gap:6px;
+        }
+        .status-set-btn{
+            padding:4px 8px;
+            border:1px solid #c9c2b4;
+            border-radius:3px;
+            background:#f3efe6;
+            font-size:12px;
+            cursor:pointer;
         }
         .reader-content {
             flex: 1;
@@ -285,11 +301,17 @@
 </head>
 <body>
 <div class="container">
-    <!-- 左侧CP分类栏 -->
+    <!-- 左侧侧边栏 -->
     <div class="sidebar">
         <h3>CP分类</h3>
         <div id="categoryList"></div>
         <button class="add-category-btn author-ctrl" onclick="openCategoryModal()">+ 新增CP分类</button>
+
+        <h3>阅读状态</h3>
+        <div class="status-item active" data-status="all" onclick="filterByStatus('all')">全部文章</div>
+        <div class="status-item" data-status="unread" onclick="filterByStatus('unread')">未读</div>
+        <div class="status-item" data-status="reading" onclick="filterByStatus('reading')">在读</div>
+        <div class="status-item" data-status="finished" onclick="filterByStatus('finished')">已读完</div>
     </div>
 
     <!-- 右侧主区域 -->
@@ -313,6 +335,12 @@
             <div class="reader-header">
                 <button class="back-btn" onclick="goBack()">← 返回书架</button>
                 <input type="text" class="article-title-input" id="readerTitle" placeholder="文章标题" readonly>
+                <div class="status-set-box">
+                    <span>设置状态：</span>
+                    <button class="status-set-btn" onclick="setArticleStatus('unread')">未读</button>
+                    <button class="status-set-btn" onclick="setArticleStatus('reading')">在读</button>
+                    <button class="status-set-btn" onclick="setArticleStatus('finished')">已读完</button>
+                </div>
                 <div class="author-ctrl">
                     <button onclick="toggleEdit()">编辑文章</button>
                     <button onclick="saveArticle()">保存文章</button>
@@ -374,6 +402,7 @@
     let hasAuthorAuth = false;
     let currentCategoryId = null;
     let currentArticleId = null;
+    let currentFilterStatus = "all";
 
     let platformData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         categories: [],
@@ -444,6 +473,25 @@
         renderCategories();
     }
 
+    // --- 阅读状态筛选与设置 ---
+    function filterByStatus(status){
+        currentFilterStatus = status;
+        document.querySelectorAll(".status-item").forEach(item=>{
+            item.classList.toggle("active", item.dataset.status === status);
+        });
+        renderArticles();
+    }
+    function setArticleStatus(status){
+        if(!currentArticleId)return;
+        const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
+        if(idx !== -1){
+            platformData.articles[idx].status = status;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
+        }
+        alert("状态修改成功");
+        renderArticles();
+    }
+
     // --- 文章管理 ---
     function openNewArticleModal() {
         if (!currentCategoryId) return alert("请先选择一个CP分类");
@@ -461,7 +509,8 @@
             id: newId,
             categoryId: currentCategoryId,
             title,
-            content: ""
+            content: "",
+            status:"unread"
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
         renderArticles();
@@ -470,12 +519,15 @@
     function renderArticles() {
         const gridEl = document.getElementById("articleGrid");
         gridEl.innerHTML = "";
-        const filtered = platformData.articles.filter(a => a.categoryId === currentCategoryId);
+        let filtered = platformData.articles.filter(a => a.categoryId === currentCategoryId);
+        if(currentFilterStatus !== "all"){
+            filtered = filtered.filter(a=>a.status === currentFilterStatus);
+        }
         filtered.forEach(art => {
             const card = document.createElement("div");
             card.className = "article-card";
             card.innerHTML = `
-                <div class="article-cover">封面</div>
+                <div class="article-cover">${art.title}</div>
                 <div class="article-info">
                     <div class="article-title">${art.title}</div>
                     <div class="article-actions">
@@ -537,6 +589,7 @@
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
         alert("保存成功");
+        renderArticles();
     }
 
     // --- 评论功能 ---
