@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的CP文章书架</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的文章书架</title>
     <style>
         * {
             margin: 0;
@@ -11,78 +11,97 @@
             box-sizing: border-box;
             font-family: SimSun, "宋体", serif;
         }
-        body {
-            background: #f0efe4;
-            color: #333;
+        :root{
+            --base-color:#f0efe4;
+            --card-color:#fffdf9;
+            --border-color:#e0d9cb;
+            --theme-color:#efe9dd;
+            --text-color:#333;
+            --author-color:#b35050;
         }
+        body {
+            background: var(--base-color);
+            color: var(--text-color);
+            font-size: clamp(14px,1vw,16px);
+        }
+        html,body{height:100%;overflow:hidden;}
         .container {
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
+        /* 大屏侧边栏固定，小屏顶部横排 */
+        @media (min-width:768px){
+            .container{flex-direction:row;}
+            .sidebar{width:180px;height:100%;border-right:1px solid var(--border-color);flex-direction:column;flex-wrap:nowrap;}
+            .article-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+        }
+        @media (max-width:767px){
+            .container{flex-direction:column;}
+            .sidebar{width:100%;height:auto;max-height:150px;border-bottom:1px solid var(--border-color);flex-wrap:wrap;}
+            .article-grid{grid-template-columns:repeat(2,1fr);}
+        }
+
         .sidebar {
-            width: 180px;
-            background: #f5f1e9;
-            border-right: 1px solid #e0d9cb;
-            padding: 15px 10px;
+            background: var(--card-color);
+            padding: clamp(8px,1.5vw,12px);
             overflow-y: auto;
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
         }
         .sidebar h3 {
-            font-size: 16px;
-            margin: 15px 0 10px;
+            font-size: clamp(13px,1vw,15px);
+            width: 100%;
+            margin: 4px 0;
             color: #554b3d;
             font-weight: normal;
         }
-        .sidebar h3:first-child{margin-top:0;}
         .category-item, .status-item {
-            padding: 8px 10px;
-            margin-bottom: 8px;
-            background: #fffdf9;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: clamp(12px,0.9vw,14px);
             border: 1px solid transparent;
+            white-space: nowrap;
+            background: var(--card-color);
         }
-        .category-item:hover, .category-item.active,
-        .status-item:hover, .status-item.active {
-            border-color: #c9c2b4;
-            background: #efe9dd;
+        .category-item.active, .status-item.active {
+            border-color: var(--border-color);
+            background: var(--theme-color);
         }
         .add-category-btn {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border: 1px dashed #c9c2b4;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
+            border: 1px dashed var(--border-color);
             border-radius: 4px;
             background: transparent;
             color: #665845;
             cursor: pointer;
-            font-size: 14px;
-        }
-        .add-category-btn:hover {
-            background: #efe9dd;
+            font-size: clamp(12px,0.9vw,14px);
         }
 
         .search-wrap{
-            padding:10px 20px;
-            background:#eae5dd;
+            padding: clamp(6px,1vw,10px);
+            background: var(--theme-color);
             display:flex;
-            gap:8px;
+            gap:6px;
         }
         #searchInput{
             flex:1;
-            padding:6px 10px;
-            border:1px solid #c9c2b4;
-            border-radius:4px;
+            padding: clamp(6px,1vw,9px);
+            border:1px solid var(--border-color);
+            border-radius: 4px;
             outline:none;
+            font-size: clamp(13px,1vw,15px);
         }
         .search-btn{
-            padding:6px 12px;
-            border:1px solid #c9c2b4;
-            border-radius:4px;
-            background:#f3efe6;
+            padding: clamp(6px,1vw,9px) clamp(8px,1.5vw,12px);
+            border:1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--card-color);
             cursor:pointer;
+            font-size: clamp(12px,0.9vw,14px);
         }
 
         .main-area {
@@ -92,308 +111,212 @@
             overflow: hidden;
         }
         .top-bar {
-            background: #eae5dd;
-            padding: 12px 15px;
+            background: var(--theme-color);
+            padding: clamp(8px,1.2vw,12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap:8px;
         }
         .top-bar h1 {
-            color: #443c30;
-            font-size: 18px;
+            font-size: clamp(15px,1.2vw,18px);
             font-weight: normal;
+            color:#443c30;
         }
         .top-bar button {
-            padding: 6px 12px;
-            border: 1px solid #c9c2b4;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background: #f3efe6;
-            color: #443c30;
+            background: var(--card-color);
             cursor: pointer;
-            font-size: 14px;
+            font-size: clamp(12px,0.9vw,14px);
+            color:#443c30;
         }
-        .author-ctrl {
-            display: none;
-        }
+        .author-ctrl {display: none;}
         .article-grid {
             flex: 1;
-            padding: 20px;
+            padding: clamp(8px,1.2vw,12px);
             overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
+            gap: clamp(8px,1.2vw,12px);
         }
         .article-card {
-            background: #fffdf9;
+            background: var(--card-color);
             border-radius: 6px;
             overflow: hidden;
             cursor: pointer;
-            border: 1px solid #e0d9cb;
-            transition: 0.2s;
+            border: 1px solid var(--border-color);
         }
         .article-cover {
-            height: 180px;
+            height: clamp(100px,12vw,140px);
             background: #f8f5ee;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #443c30;
-            font-size: 15px;
+            font-size: clamp(13px,1vw,15px);
             text-align: center;
-            padding: 10px;
+            padding: 8px;
         }
         .article-info {
-            padding: 10px;
-            font-size: 13px;
+            padding: clamp(6px,1vw,10px);
+            font-size: clamp(11px,0.8vw,13px);
         }
-        .article-title {
-            font-weight: normal;
-            margin-bottom: 4px;
-        }
-        .article-actions {
-            margin-top: 5px;
-            display: flex;
-            gap:5px;
-        }
+        .article-title {margin-bottom: 4px;font-weight:normal;}
+        .article-actions {margin-top: 4px;display: flex;gap:4px;}
         .del-btn,.move-btn {
-            color: #995544;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
+            background: none;border: none;cursor: pointer;
+            font-size: clamp(10px,0.7vw,12px);
+            color:#995544;
         }
 
         .reader-view {
             flex: 1;
             display: none;
             flex-direction: column;
-            background: #fffdf9;
+            background: var(--card-color);
             overflow: hidden;
         }
         .reader-header {
-            background: #eae5dd;
-            padding: 12px 15px;
+            background: var(--theme-color);
+            padding: clamp(8px,1.2vw,12px);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: clamp(6px,1vw,10px);
             flex-wrap:wrap;
             flex-shrink: 0;
         }
         .back-btn {
-            padding: 6px 12px;
-            border: 1px solid #c9c2b4;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background: #f3efe6;
-            color: #443c30;
+            background: var(--card-color);
             cursor: pointer;
-            font-size: 14px;
+            font-size: clamp(12px,0.9vw,14px);
         }
-        .status-set-box{
-            display:flex;
-            gap:6px;
-        }
+        .status-set-box{display:flex;gap:4px;flex-wrap:wrap;}
         .status-set-btn{
-            padding:4px 8px;
-            border:1px solid #c9c2b4;
+            padding: clamp(4px,0.8vw,6px) clamp(6px,1vw,9px);
+            border:1px solid var(--border-color);
             border-radius:3px;
-            background:#f3efe6;
-            font-size:12px;
+            background: var(--card-color);
+            font-size: clamp(11px,0.8vw,13px);
             cursor:pointer;
         }
         .reader-content {
             flex: 1;
-            padding: 30px;
+            padding: clamp(12px,2vw,20px);
             overflow-y: auto;
+            line-height:1.8;
         }
         .article-title-input {
             width: 100%;
-            font-size: 22px;
-            border: none;
-            outline: none;
-            margin-bottom: 15px;
-            color: #332b20;
+            font-size: clamp(16px,1.5vw,20px);
+            border: none;outline: none;
+            margin-bottom: 12px;
             background: transparent;
         }
-        .article-body-container {
-            line-height: 1.9;
-            font-size: 16px;
-            color: #333;
-        }
-        .article-paragraph {
-            margin-bottom: 10px;
-        }
-        .article-paragraph.indent {
-            text-indent: 2em;
-        }
+        .article-paragraph {margin-bottom: 8px;}
+        .article-paragraph.indent {text-indent: 2em;}
         .highlight-text {
             background-color: #fff3cd;
             padding: 0 2px;
             border-radius: 2px;
         }
         .inline-comment-box {
-            margin: 10px 0 20px 0;
-            padding: 10px;
+            margin: 8px 0 12px;
+            padding: clamp(8px,1.2vw,12px);
             background: #f8f5ee;
             border-radius: 4px;
             border-left: 3px solid #d4b886;
             position: relative;
         }
         .close-comment-btn {
-            position: absolute;
-            top: 6px;
-            right: 8px;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            color: #666;
+            position: absolute;top: 4px;right: 6px;
+            background: transparent;border: none;
+            font-size: 16px;cursor: pointer;color:#666;
         }
-        .inline-comment-box textarea {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #ddd3c2;
-            border-radius: 4px;
-            margin-bottom: 6px;
-            resize: none;
+        textarea {
+            width: 100%;padding: 6px;border:1px solid #ddd3c2;
+            border-radius:4px;margin-bottom:6px;resize:none;
+            font-size: clamp(13px,1vw,15px);
         }
         .inline-comment-list .comment-item {
-            padding: 8px;
-            background: #fff;
-            border-radius: 4px;
-            margin-bottom: 6px;
-            font-size: 14px;
-            position: relative;
+            padding: 6px;background:var(--card-color);
+            border-radius:4px;margin-bottom:4px;
+            font-size: clamp(12px,0.9vw,14px);
         }
-        .inline-comment-list .comment-name {
-            font-size: 12px;
-            color: #72624c;
-            margin-bottom: 3px;
-        }
-        .author-tag {
-            color: #b35050;
-            font-weight: bold;
-            margin-left: 5px;
-        }
+        .comment-name {font-size: clamp(11px,0.8vw,13px);color:#72624c;margin-bottom:2px;}
+        .author-tag {color:var(--author-color);font-weight:bold;margin-left:4px;}
         .reply-btn,.del-cmt-btn {
-            font-size: 12px;
-            color: #666;
-            cursor: pointer;
-            margin-left: 8px;
+            font-size: clamp(11px,0.8vw,13px);
+            color:#666;cursor:pointer;margin-left:6px;
         }
-        .reply-box {
-            margin-top: 5px;
-            display: none;
-        }
+        .reply-box {margin-top:4px;display:none;}
 
         .comment-area {
-            padding: 20px;
-            border-top: 1px solid #e0d9cb;
-            background: #fbf8f2;
-            flex-shrink: 0;
+            padding: clamp(8px,1.2vw,12px);
+            border-top:1px solid var(--border-color);
+            background:#fbf8f2;flex-shrink:0;
         }
-        .comment-title {
-            font-size: 17px;
-            margin-bottom: 12px;
-            color: #443c30;
-            font-weight: normal;
-        }
-        .input-box {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+        .comment-title {font-size: clamp(14px,1.1vw,16px);margin-bottom:8px;}
+        .input-box {display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
         #nickname {
-            width: 100px;
-            padding: 8px;
-            border: 1px solid #ddd3c2;
-            border-radius: 4px;
-            outline: none;
-            background: #fffdf9;
-            font-size: 14px;
+            width: clamp(70px,8vw,90px);padding:6px;
+            border:1px solid #ddd3c2;border-radius:4px;
+            font-size: clamp(13px,1vw,15px);outline:none;
         }
-        #comment-input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd3c2;
-            border-radius: 4px;
-            outline: none;
-            resize: none;
-            min-height: 40px;
-            background: #fffdf9;
-            font-size: 14px;
-        }
+        #comment-input {flex:1;min-height:36px;}
         .submit-btn {
-            padding: 0 15px;
-            background: #eae5dd;
-            color: #443c30;
-            border: 1px solid #c9c2b4;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
+            background: var(--theme-color);border:1px solid var(--border-color);
+            border-radius:4px;cursor:pointer;font-size: clamp(12px,0.9vw,14px);
         }
         .comment-item {
-            padding: 12px;
-            background: #fffdf9;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            border: 1px solid #f0e9df;
-            font-size: 14px;
-            position: relative;
-        }
-        .comment-name {
-            color: #72624c;
-            margin-bottom: 4px;
-            font-size: 13px;
+            padding: clamp(6px,1vw,10px);background:var(--card-color);
+            border-radius:6px;margin-bottom:8px;border:1px solid var(--border-color);
+            font-size: clamp(12px,0.9vw,14px);
         }
 
         .modal-mask {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.2);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            position: fixed;inset:0;
+            background:rgba(0,0,0,0.2);display:none;
+            align-items:center;justify-content:center;
+            z-index:1000;padding:10px;
         }
         .modal-box {
-            background: #fffdf9;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #e0d9cb;
+            background:var(--card-color);padding: clamp(12px,2vw,18px);
+            border-radius:6px;border:1px solid var(--border-color);
+            width:100%;max-width:500px;
         }
         .modal-box input,.modal-box select {
-            padding: 6px;
-            margin: 8px 0;
-            border: 1px solid #ddd3c2;
-            border-radius: 4px;
-            font-family: SimSun;
-            min-width:200px;
+            width:100%;padding:6px;margin:6px 0;
+            border:1px solid var(--border-color);border-radius:4px;
+            font-size: clamp(13px,1vw,15px);
         }
         .modal-btn {
-            padding: 6px 12px;
-            border: 1px solid #c9c2b4;
-            border-radius: 4px;
-            background: #f3efe6;
-            color: #443c30;
-            cursor: pointer;
-            font-family: SimSun;
-            margin-right:8px;
+            padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
+            border:1px solid var(--border-color);border-radius:4px;
+            background:var(--theme-color);cursor:pointer;
+            font-size: clamp(12px,0.9vw,14px);margin-right:6px;
         }
-        .indent-check {
-            margin:8px 0;
+        .indent-check {margin:6px 0;font-size: clamp(13px,1vw,15px);}
+
+        /* 按钮点击适配 */
+        button,div[onclick]{
+            -webkit-tap-highlight-color:transparent;
+            touch-action:manipulation;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="sidebar">
-        <h3>CP分类</h3>
+        <h3>分类</h3>
         <div id="categoryList"></div>
-        <button class="add-category-btn author-ctrl" onclick="openCategoryModal()">+ 新增CP分类</button>
+        <button class="add-category-btn author-ctrl" onclick="openCategoryModal()">新增分类</button>
 
         <h3>阅读状态</h3>
-        <div class="status-item active" data-status="all" onclick="filterByStatus('all')">全部文章</div>
+        <div class="status-item active" data-status="all" onclick="filterByStatus('all')">全部</div>
         <div class="status-item" data-status="unread" onclick="filterByStatus('unread')">未读</div>
         <div class="status-item" data-status="reading" onclick="filterByStatus('reading')">在读</div>
         <div class="status-item" data-status="finished" onclick="filterByStatus('finished')">已读完</div>
@@ -402,16 +325,16 @@
     <div class="main-area">
         <div class="bookshelf-view" style="height:100%;display:flex;flex-direction:column;">
             <div class="top-bar">
-                <h1>我的CP文章书架</h1>
+                <h1>文章书架</h1>
                 <div>
-                    <button id="modeToggleBtn" onclick="toggleMode()">进入作者模式</button>
+                    <button id="modeToggleBtn" onclick="toggleMode()">作者模式</button>
                     <div class="author-ctrl">
                         <button onclick="openNewArticleModal()">新增文章</button>
                     </div>
                 </div>
             </div>
             <div class="search-wrap">
-                <input id="searchInput" placeholder="输入文章标题搜索">
+                <input id="searchInput" placeholder="搜索标题">
                 <button class="search-btn" onclick="searchArticle()">搜索</button>
             </div>
             <div class="article-grid" id="articleGrid"></div>
@@ -419,27 +342,25 @@
 
         <div class="reader-view" id="readerView">
             <div class="reader-header">
-                <button class="back-btn" onclick="goBack()">← 返回书架</button>
+                <button class="back-btn" onclick="goBack()">返回</button>
                 <input type="text" class="article-title-input" id="readerTitle" placeholder="文章标题" readonly>
                 <div class="status-set-box">
-                    <span>设置状态：</span>
                     <button class="status-set-btn" onclick="setArticleStatus('unread')">未读</button>
                     <button class="status-set-btn" onclick="setArticleStatus('reading')">在读</button>
-                    <button class="status-set-btn" onclick="setArticleStatus('finished')">已读完</button>
+                    <button class="status-set-btn" onclick="setArticleStatus('finished')">已读</button>
                 </div>
                 <div class="author-ctrl">
-                    <button onclick="toggleEdit()">编辑文章</button>
-                    <button onclick="saveArticle()">保存文章</button>
+                    <button onclick="toggleEdit()">编辑</button>
                 </div>
             </div>
             <div class="reader-content">
                 <div id="articleBodyContainer" class="article-body-container"></div>
             </div>
             <div class="comment-area">
-                <h3 class="comment-title">文末整体评价</h3>
+                <h3 class="comment-title">整体评价</h3>
                 <div class="input-box">
                     <input id="nickname" placeholder="昵称">
-                    <textarea id="comment-input" placeholder="写下整体感想"></textarea>
+                    <textarea id="comment-input" placeholder="写下感想"></textarea>
                     <button class="submit-btn" onclick="addComment()">发布</button>
                 </div>
                 <div id="commentList"></div>
@@ -450,505 +371,335 @@
 
 <div class="modal-mask" id="categoryModal">
     <div class="modal-box">
-        <div>新增CP分类</div>
-        <input type="text" id="newCategoryName" placeholder="CP名称（如AB/CD）">
-        <br>
-        <button class="modal-btn" onclick="addCategory()">确认添加</button>
-        <button class="modal-btn" onclick="closeCategoryModal()">取消</button>
+        <div>新增分类</div>
+        <input type="text" id="newCategoryName" placeholder="输入分类名称">
+        <div style="margin-top:8px;">
+            <button class="modal-btn" onclick="addCategory()">确定</button>
+            <button class="modal-btn" onclick="closeCategoryModal()">取消</button>
+        </div>
     </div>
 </div>
-
 <div class="modal-mask" id="articleModal">
     <div class="modal-box">
         <div>新增文章</div>
         <input type="text" id="newArticleTitle" placeholder="文章标题">
-        <br>
-        <button class="modal-btn" onclick="addArticle()">确认添加</button>
-        <button class="modal-btn" onclick="closeArticleModal()">取消</button>
+        <div style="margin-top:8px;">
+            <button class="modal-btn" onclick="addArticle()">确定</button>
+            <button class="modal-btn" onclick="closeArticleModal()">取消</button>
+        </div>
     </div>
 </div>
-
 <div class="modal-mask" id="moveModal">
     <div class="modal-box">
-        <div>移动文章至其他CP分类</div>
+        <div>移动分类</div>
         <select id="moveCategorySelect"></select>
-        <br>
-        <button class="modal-btn" onclick="confirmMoveArticle()">确认移动</button>
-        <button class="modal-btn" onclick="closeMoveModal()">取消</button>
+        <div style="margin-top:8px;">
+            <button class="modal-btn" onclick="confirmMoveArticle()">确定</button>
+            <button class="modal-btn" onclick="closeMoveModal()">取消</button>
+        </div>
     </div>
 </div>
-
 <div class="modal-mask" id="pwdModal">
     <div class="modal-box">
-        <div>输入作者密码解锁管理权限</div>
-        <input type="password" id="pwdInput" placeholder="请输入密码">
-        <br>
-        <button class="modal-btn" onclick="checkPwd()">确认解锁</button>
-        <button class="modal-btn" onclick="closePwdModal()">取消</button>
+        <div>输入作者密码</div>
+        <input type="password" id="pwdInput" placeholder="密码">
+        <div style="margin-top:8px;">
+            <button class="modal-btn" onclick="checkPwd()">解锁</button>
+            <button class="modal-btn" onclick="closePwdModal()">取消</button>
+        </div>
     </div>
 </div>
-
 <div class="modal-mask" id="editModal">
-    <div class="modal-box" style="width:600px;">
-        <div>编辑文章内容</div>
-        <textarea id="editContent" style="width:100%;height:300px;margin:10px 0;"></textarea>
+    <div class="modal-box">
+        <div>编辑内容</div>
+        <textarea id="editContent" style="width:100%;height:220px;margin:8px 0;"></textarea>
         <div class="indent-check">
             <label><input type="checkbox" id="indentSwitch"> 全文首行缩进两格</label>
         </div>
-        <button class="modal-btn" onclick="saveEditContent()">保存</button>
-        <button class="modal-btn" onclick="closeEditModal()">取消</button>
+        <div style="margin-top:8px;">
+            <button class="modal-btn" onclick="saveEditContent()">保存</button>
+            <button class="modal-btn" onclick="closeEditModal()">取消</button>
+        </div>
     </div>
 </div>
 
 <script>
     const STORAGE_KEY = "cp_article_shelf";
     const AUTHOR_PWD = "123456";
-    let isAuthor = false;
-    let hasAuthorAuth = false;
-    let currentCategoryId = null;
-    let currentArticleId = null;
-    let currentFilterStatus = "all";
-    let inlineComments = {};
+    let isAuthor = false,hasAuthorAuth = false;
+    let currentCategoryId = null,currentArticleId = null;
+    let currentFilterStatus = "all",inlineComments = {};
+    let platformData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {categories:[],articles:[],comments:[]};
 
-    let platformData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-        categories: [],
-        articles: [],
-        comments: []
-    };
-
-    function searchArticle(){
+    function searchArticle(){renderArticles();}
+    function toggleMode(){
+        if(!hasAuthorAuth)return document.getElementById("pwdModal").style.display="flex";
+        isAuthor=!isAuthor;
+        document.querySelectorAll(".author-ctrl").forEach(e=>e.style.display=isAuthor?"block":"none");
+        document.querySelectorAll(".article-actions").forEach(e=>e.style.display=isAuthor?"flex":"none");
+        document.getElementById("modeToggleBtn").innerText=isAuthor?"读者模式":"作者模式";
+        if(currentArticleId)openReader(currentArticleId);
+    }
+    function checkPwd(){
+        if(document.getElementById("pwdInput").value.trim()===AUTHOR_PWD){
+            hasAuthorAuth=true;toggleMode();closePwdModal();alert("解锁成功");
+        }else alert("密码错误");
+    }
+    function closePwdModal(){document.getElementById("pwdModal").style.display="none";}
+    function openCategoryModal(){document.getElementById("categoryModal").style.display="flex";}
+    function closeCategoryModal(){document.getElementById("categoryModal").style.display="none";}
+    function addCategory(){
+        let n=document.getElementById("newCategoryName").value.trim();
+        if(!n)return;
+        platformData.categories.push({id:Date.now().toString(),name:n});
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        renderCategories();closeCategoryModal();
+    }
+    function renderCategories(){
+        let l=document.getElementById("categoryList");l.innerHTML="";
+        platformData.categories.forEach(c=>{
+            let d=document.createElement("div");
+            d.className="category-item"+(c.id===currentCategoryId?" active":"");
+            d.innerText=c.name;d.onclick=()=>selectCategory(c.id);
+            l.appendChild(d);
+        });
+    }
+    function selectCategory(id){currentCategoryId=id;renderArticles();renderCategories();}
+    function filterByStatus(s){
+        currentFilterStatus=s;
+        document.querySelectorAll(".status-item").forEach(d=>d.classList.toggle("active",d.dataset.status===s));
         renderArticles();
     }
-
-    function toggleMode() {
-        if (!hasAuthorAuth) {
-            document.getElementById("pwdModal").style.display = "flex";
-            return;
-        }
-        isAuthor = !isAuthor;
-        document.querySelectorAll(".author-ctrl").forEach(el => {
-            el.style.display = isAuthor ? "block" : "none";
-        });
-        document.querySelectorAll(".article-actions").forEach(el => {
-            el.style.display = isAuthor ? "flex" : "none";
-        });
-        document.getElementById("modeToggleBtn").innerText = isAuthor ? "进入读者模式" : "进入作者模式";
-        openReader(currentArticleId);
-    }
-    function checkPwd() {
-        if (document.getElementById("pwdInput").value.trim() === AUTHOR_PWD) {
-            hasAuthorAuth = true;
-            toggleMode();
-            closePwdModal();
-            alert("已进入作者模式");
-        } else {
-            alert("密码错误");
-        }
-    }
-    function closePwdModal() {
-        document.getElementById("pwdModal").style.display = "none";
-    }
-
-    function openCategoryModal() {
-        document.getElementById("categoryModal").style.display = "flex";
-        document.getElementById("newCategoryName").value = "";
-    }
-    function closeCategoryModal() {
-        document.getElementById("categoryModal").style.display = "none";
-    }
-    function addCategory() {
-        const name = document.getElementById("newCategoryName").value.trim();
-        if (!name) return alert("请输入CP名称");
-        const newId = Date.now().toString();
-        platformData.categories.push({ id: newId, name });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        renderCategories();
-        closeCategoryModal();
-    }
-    function renderCategories() {
-        const listEl = document.getElementById("categoryList");
-        listEl.innerHTML = "";
-        platformData.categories.forEach(cat => {
-            const item = document.createElement("div");
-            item.className = "category-item" + (cat.id === currentCategoryId ? " active" : "");
-            item.innerText = cat.name;
-            item.onclick = () => selectCategory(cat.id);
-            listEl.appendChild(item);
-        });
-    }
-    function selectCategory(id) {
-        currentCategoryId = id;
-        renderArticles();
-        renderCategories();
-    }
-
-    function filterByStatus(status){
-        currentFilterStatus = status;
-        document.querySelectorAll(".status-item").forEach(item=>{
-            item.classList.toggle("active", item.dataset.status === status);
-        });
-        renderArticles();
-    }
-    function setArticleStatus(status){
+    function setArticleStatus(s){
         if(!currentArticleId)return;
-        const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
-        if(idx !== -1){
-            platformData.articles[idx].status = status;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        }
-        alert("状态修改成功");
-        renderArticles();
+        let i=platformData.articles.findIndex(a=>a.id===currentArticleId);
+        if(i>-1){platformData.articles[i].status=s;localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));}
+        alert("状态修改成功");renderArticles();
     }
-
-    function openMoveModal(artId){
-        currentArticleId = artId;
-        const select = document.getElementById("moveCategorySelect");
-        select.innerHTML = "";
-        platformData.categories.forEach(cat=>{
-            let opt = document.createElement("option");
-            opt.value = cat.id;
-            opt.innerText = cat.name;
-            select.appendChild(opt);
-        });
-        document.getElementById("moveModal").style.display = "flex";
+    function openMoveModal(id){
+        currentArticleId=id;
+        let s=document.getElementById("moveCategorySelect");s.innerHTML="";
+        platformData.categories.forEach(c=>s.options.add(new Option(c.name,c.id)));
+        document.getElementById("moveModal").style.display="flex";
     }
-    function closeMoveModal(){
-        document.getElementById("moveModal").style.display = "none";
-    }
+    function closeMoveModal(){document.getElementById("moveModal").style.display="none";}
     function confirmMoveArticle(){
-        const targetCateId = document.getElementById("moveCategorySelect").value;
-        const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
-        if(idx>-1){
-            platformData.articles[idx].categoryId = targetCateId;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-            renderArticles();
-            closeMoveModal();
-            alert("文章分类移动成功");
-        }
+        let t=document.getElementById("moveCategorySelect").value;
+        let i=platformData.articles.findIndex(a=>a.id===currentArticleId);
+        if(i>-1){platformData.articles[i].categoryId=t;localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));renderArticles();closeMoveModal();}
     }
-
-    function openNewArticleModal() {
-        if (!currentCategoryId) return alert("请先选择一个CP分类");
-        document.getElementById("articleModal").style.display = "flex";
-        document.getElementById("newArticleTitle").value = "";
+    function openNewArticleModal(){if(!currentCategoryId)return;document.getElementById("articleModal").style.display="flex";}
+    function closeArticleModal(){document.getElementById("articleModal").style.display="none";}
+    function addArticle(){
+        let t=document.getElementById("newArticleTitle").value.trim();
+        if(!t)return;
+        platformData.articles.push({id:Date.now().toString(),categoryId:currentCategoryId,title:t,content:"",status:"unread"});
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        renderArticles();closeArticleModal();
     }
-    function closeArticleModal() {
-        document.getElementById("articleModal").style.display = "none";
-    }
-    function addArticle() {
-        const title = document.getElementById("newArticleTitle").value.trim();
-        if (!title) return alert("请输入文章标题");
-        const newId = Date.now().toString();
-        platformData.articles.push({
-            id: newId,
-            categoryId: currentCategoryId,
-            title,
-            content: "",
-            status:"unread"
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        renderArticles();
-        closeArticleModal();
-    }
-    function renderArticles() {
-        const gridEl = document.getElementById("articleGrid");
-        gridEl.innerHTML = "";
-        let searchKey = document.getElementById("searchInput").value.trim().toLowerCase();
-        let filtered = platformData.articles.filter(a => a.categoryId === currentCategoryId);
-        if(searchKey){
-            filtered = filtered.filter(a=>a.title.toLowerCase().includes(searchKey));
-        }
-        if(currentFilterStatus !== "all"){
-            filtered = filtered.filter(a=>a.status === currentFilterStatus);
-        }
-        filtered.forEach(art => {
-            const card = document.createElement("div");
-            card.className = "article-card";
-            card.innerHTML = `
+    function renderArticles(){
+        let g=document.getElementById("articleGrid");g.innerHTML="";
+        let k=document.getElementById("searchInput").value.trim().toLowerCase();
+        let list=platformData.articles.filter(a=>a.categoryId===currentCategoryId);
+        if(k)list=list.filter(a=>a.title.toLowerCase().includes(k));
+        if(currentFilterStatus!=="all")list=list.filter(a=>a.status===currentFilterStatus);
+        list.forEach(art=>{
+            let c=document.createElement("div");c.className="article-card";
+            c.innerHTML=`
                 <div class="article-cover">${art.title}</div>
                 <div class="article-info">
                     <div class="article-title">${art.title}</div>
                     <div class="article-actions" style="display:${isAuthor?'flex':'none'}">
-                        <button class="move-btn" onclick="openMoveModal('${art.id}')">移动分类</button>
+                        <button class="move-btn" onclick="openMoveModal('${art.id}')">移动</button>
                         <button class="del-btn" onclick="deleteArticle('${art.id}')">删除</button>
                     </div>
                 </div>
             `;
-            card.onclick = (e) => {
-                if (e.target.classList.contains("del-btn")||e.target.classList.contains("move-btn")) return;
-                openReader(art.id);
-            };
-            gridEl.appendChild(card);
+            c.onclick=e=>{if(!e.target.classList.contains("del-btn")&&!e.target.classList.contains("move-btn"))openReader(art.id);};
+            g.appendChild(c);
         });
     }
-    function deleteArticle(id) {
-        if (!confirm("确定删除这篇文章？")) return;
-        platformData.articles = platformData.articles.filter(a => a.id !== id);
-        platformData.comments = platformData.comments.filter(c => c.articleId !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
+    function deleteArticle(id){
+        if(!confirm("确定删除？"))return;
+        platformData.articles=platformData.articles.filter(a=>a.id!==id);
+        platformData.comments=platformData.comments.filter(c=>c.articleId!==id);
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
         renderArticles();
     }
-
-    function openReader(id) {
-        currentArticleId = id;
-        const art = platformData.articles.find(a => a.id === id);
-        if (!art) return;
-        document.getElementById("readerTitle").value = art.title;
-        document.querySelector(".bookshelf-view").style.display = "none";
-        document.getElementById("readerView").style.display = "flex";
-        renderArticleBody(art);
-        renderComments();
+    function openReader(id){
+        currentArticleId=id;
+        let art=platformData.articles.find(a=>a.id===id);
+        if(!art)return;
+        document.getElementById("readerTitle").value=art.title;
+        document.querySelector(".bookshelf-view").style.display="none";
+        document.getElementById("readerView").style.display="flex";
+        renderArticleBody(art);renderComments();
     }
-
-    function renderArticleBody(art) {
-        const container = document.getElementById("articleBodyContainer");
-        const paragraphs = art.content.split("\n");
-        container.innerHTML = "";
-        inlineComments = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_inline_${currentArticleId}`)) || {};
-
-        paragraphs.forEach((p, idx) => {
-            const paraId = `para-${idx}`;
-            const paraEl = document.createElement("div");
-            paraEl.className = "article-paragraph";
-            paraEl.id = paraId;
-            paraEl.textContent = p;
-
-            const commentBox = document.createElement("div");
-            commentBox.className = "inline-comment-box";
-            commentBox.id = `comment-box-${idx}`;
-            commentBox.style.display = "none";
-            commentBox.innerHTML = `
+    function renderArticleBody(art){
+        let cont=document.getElementById("articleBodyContainer");
+        let ps=art.content.split("\n");cont.innerHTML="";
+        inlineComments=JSON.parse(localStorage.getItem(`${STORAGE_KEY}_inline_${currentArticleId}`))||{};
+        ps.forEach((p,idx)=>{
+            let pEl=document.createElement("div");
+            pEl.className="article-paragraph";pEl.id=`para-${idx}`;pEl.textContent=p;
+            let cBox=document.createElement("div");
+            cBox.className="inline-comment-box";cBox.id=`comment-box-${idx}`;cBox.style.display="none";
+            cBox.innerHTML=`
                 <button class="close-comment-btn" onclick="closeInlineComment(${idx})">×</button>
-                <textarea placeholder="写下这段的细节评价"></textarea>
-                <button class="submit-btn" style="font-size:12px;padding:4px 8px" onclick="addInlineComment(${idx})">提交评价</button>
+                <textarea placeholder="段落评价"></textarea>
+                <button class="submit-btn" onclick="addInlineComment(${idx})">提交</button>
                 <div class="inline-comment-list" id="inline-comment-list-${idx}"></div>
             `;
-
-            container.appendChild(paraEl);
-            container.appendChild(commentBox);
-
-            if (inlineComments[idx]) {
-                showCommentList(idx);
-            }
+            cont.appendChild(pEl);cont.appendChild(cBox);
+            if(inlineComments[idx])showCommentList(idx);
         });
-
-        container.onmouseup = function () {
-            const sel = window.getSelection();
-            const text = sel.toString().trim();
-            if (!text) return;
-            const range = sel.getRangeAt(0);
-            const para = range.startContainer.parentElement.closest(".article-paragraph");
-            if (!para) return;
-            const idx = para.id.split("-")[1];
-            const box = document.getElementById(`comment-box-${idx}`);
-            box.style.display = "block";
-
-            const highlight = document.createElement("span");
-            highlight.className = "highlight-text";
-            highlight.textContent = text;
-            range.deleteContents();
-            range.insertNode(highlight);
-            sel.removeAllRanges();
+        cont.onmouseup=()=>{
+            let s=window.getSelection(),txt=s.toString().trim();
+            if(!txt)return;
+            let r=s.getRangeAt(0);
+            let para=r.startContainer.parentElement.closest(".article-paragraph");
+            if(!para)return;
+            let idx=para.id.split("-")[1];
+            document.getElementById(`comment-box-${idx}`).style.display="block";
+            let span=document.createElement("span");
+            span.className="highlight-text";span.textContent=txt;
+            r.deleteContents();r.insertNode(span);s.removeAllRanges();
         };
     }
-
-    function closeInlineComment(idx) {
-        document.getElementById(`comment-box-${idx}`).style.display = "none";
-    }
-
-    function showCommentList(idx) {
-        const list = document.getElementById(`inline-comment-list-${idx}`);
-        list.innerHTML = "";
-        if (!inlineComments[idx]) return;
-        inlineComments[idx].forEach((c, i) => {
-            list.innerHTML += `
-                <div class="comment-item" data-cid="${i}">
+    function closeInlineComment(idx){document.getElementById(`comment-box-${idx}`).style.display="none";}
+    function showCommentList(idx){
+        let list=document.getElementById(`inline-comment-list-${idx}`);list.innerHTML="";
+        if(!inlineComments[idx])return;
+        inlineComments[idx].forEach((c,i)=>{
+            list.innerHTML+=`
+                <div class="comment-item">
                     <div class="comment-name">
-                        ${c.nickname} · ${c.time}
-                        ${c.isAuthor ? '<span class="author-tag">作者回复</span>' : ''}
-                        ${isAuthor ? `<span class="reply-btn" onclick="toggleReply(${idx},${i})">回复</span><span class="del-cmt-btn" onclick="delInlineComment(${idx},${i})">删除</span>` : ''}
+                        ${c.nickname} ${c.time}
+                        ${c.isAuthor?'<span class="author-tag">作者</span>':''}
+                        ${isAuthor?`<span class="reply-btn" onclick="toggleReply(${idx},${i})">回复</span><span class="del-cmt-btn" onclick="delInlineComment(${idx},${i})">删除</span>`:''}
                     </div>
                     <div>${c.content}</div>
                     <div class="reply-box" id="reply-box-${idx}-${i}">
-                        <textarea placeholder="写下作者回复" style="width:100%;height:60px;"></textarea>
-                        <button class="submit-btn" style="font-size:12px;padding:4px 8px;margin-top:5px" onclick="submitReply(${idx},${i})">提交回复</button>
+                        <textarea placeholder="作者回复"></textarea>
+                        <button class="submit-btn" onclick="submitReply(${idx},${i})">提交</button>
                     </div>
                 </div>
             `;
         });
     }
-
-    function addInlineComment(idx) {
-        const box = document.getElementById(`comment-box-${idx}`);
-        const textarea = box.querySelector("textarea");
-        const content = textarea.value.trim();
-        const nickname = document.getElementById("nickname").value.trim() || "匿名";
-        if (!content) return alert("请输入评价内容");
-
-        if (!inlineComments[idx]) inlineComments[idx] = [];
-        inlineComments[idx].push({
-            nickname,
-            content,
-            time: new Date().toLocaleString(),
-            isAuthor: false
-        });
-        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
-        textarea.value = "";
-        showCommentList(idx);
-        alert("评价已提交");
+    function addInlineComment(idx){
+        let box=document.getElementById(`comment-box-${idx}`);
+        let txt=box.querySelector("textarea").value.trim();
+        let nick=document.getElementById("nickname").value.trim()||"匿名";
+        if(!txt)return;
+        if(!inlineComments[idx])inlineComments[idx]=[];
+        inlineComments[idx].push({nickname:nick,content:txt,time:new Date().toLocaleString(),isAuthor:false});
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`,JSON.stringify(inlineComments));
+        box.querySelector("textarea").value="";showCommentList(idx);
     }
-
-    function toggleReply(idx, i) {
-        const box = document.getElementById(`reply-box-${idx}-${i}`);
-        box.style.display = box.style.display === "block" ? "none" : "block";
+    function toggleReply(idx,i){
+        let d=document.getElementById(`reply-box-${idx}-${i}`);
+        d.style.display=d.style.display==="block"?"none":"block";
     }
-    function submitReply(idx, i) {
-        const box = document.getElementById(`reply-box-${idx}-${i}`);
-        const textarea = box.querySelector("textarea");
-        const content = textarea.value.trim();
-        if (!content || !isAuthor) return alert("无权限或内容为空");
-
-        inlineComments[idx].push({
-            nickname: "作者",
-            content,
-            time: new Date().toLocaleString(),
-            isAuthor: true
-        });
-        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
-        textarea.value = "";
-        box.style.display = "none";
-        showCommentList(idx);
-        alert("作者回复已提交");
+    function submitReply(idx,i){
+        let d=document.getElementById(`reply-box-${idx}-${i}`);
+        let txt=d.querySelector("textarea").value.trim();
+        if(!txt||!isAuthor)return;
+        inlineComments[idx].push({nickname:"作者",content:txt,time:new Date().toLocaleString(),isAuthor:true});
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`,JSON.stringify(inlineComments));
+        d.style.display="none";showCommentList(idx);
     }
-
-    function delInlineComment(idx, i) {
-        if (!isAuthor || !confirm("确定删除这条评价？")) return;
-        inlineComments[idx].splice(i, 1);
-        if (inlineComments[idx].length === 0) delete inlineComments[idx];
-        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
+    function delInlineComment(idx,i){
+        if(!isAuthor||!confirm("删除本条？"))return;
+        inlineComments[idx].splice(i,1);
+        if(inlineComments[idx].length===0)delete inlineComments[idx];
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`,JSON.stringify(inlineComments));
         showCommentList(idx);
     }
-
-    function goBack() {
-        document.getElementById("readerView").style.display = "none";
-        document.querySelector(".bookshelf-view").style.display = "flex";
-        currentArticleId = null;
+    function goBack(){
+        document.getElementById("readerView").style.display="none";
+        document.querySelector(".bookshelf-view").style.display="flex";
+        currentArticleId=null;
     }
-
-    function toggleEdit() {
-        if (!isAuthor) return alert("无编辑权限");
-        const art = platformData.articles.find(a=>a.id===currentArticleId);
-        document.getElementById("editContent").value = art.content;
-        document.getElementById("indentSwitch").checked = false;
-        document.getElementById("editModal").style.display = "flex";
+    function toggleEdit(){
+        if(!isAuthor)return;
+        let art=platformData.articles.find(a=>a.id===currentArticleId);
+        document.getElementById("editContent").value=art.content;
+        document.getElementById("indentSwitch").checked=false;
+        document.getElementById("editModal").style.display="flex";
     }
-    function closeEditModal() {
-        document.getElementById("editModal").style.display = "none";
-    }
-    function saveEditContent() {
-        let content = document.getElementById("editContent").value;
-        const needIndent = document.getElementById("indentSwitch").checked;
-        if (needIndent) {
-            content = content.replace(/^/gm, "　　");
-        }
-        const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
-        if(idx>-1) platformData.articles[idx].content = content;
+    function closeEditModal(){document.getElementById("editModal").style.display="none";}
+    function saveEditContent(){
+        let cont=document.getElementById("editContent").value;
+        if(document.getElementById("indentSwitch").checked)cont=cont.replace(/^/gm,"　　");
+        let idx=platformData.articles.findIndex(a=>a.id===currentArticleId);
+        if(idx>-1)platformData.articles[idx].content=cont;
         localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
-        closeEditModal();
-        openReader(currentArticleId);
-        alert("文章已保存（缩进已" + (needIndent ? "开启" : "关闭") + "）");
+        closeEditModal();openReader(currentArticleId);
     }
-    function saveArticle() {
-        alert("已自动保存编辑内容");
+    function addComment(){
+        let nick=document.getElementById("nickname").value.trim()||"匿名";
+        let txt=document.getElementById("comment-input").value.trim();
+        if(!txt||!currentArticleId)return;
+        platformData.comments.push({id:Date.now().toString(),articleId:currentArticleId,user:nick,content:txt,time:new Date().toLocaleString(),reply:[]});
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        document.getElementById("comment-input").value="";renderComments();
     }
-
-    function addComment() {
-        const nick = document.getElementById("nickname").value.trim() || "匿名";
-        const text = document.getElementById("comment-input").value.trim();
-        if (!text || !currentArticleId) return alert("请输入评论内容");
-        platformData.comments.push({
-            id: Date.now().toString(),
-            articleId: currentArticleId,
-            user: nick,
-            content: text,
-            time: new Date().toLocaleString(),
-            reply: []
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        document.getElementById("comment-input").value = "";
-        renderComments();
-    }
-
-    // 文末评论回复删除
     function toggleBottomReply(cid){
-        const dom = document.getElementById(`bottom-reply-${cid}`);
-        dom.style.display = dom.style.display==="block"?"none":"block";
+        let d=document.getElementById(`bottom-reply-${cid}`);
+        d.style.display=d.style.display==="block"?"none":"block";
     }
     function submitBottomReply(cid){
         if(!isAuthor)return;
-        const comment = platformData.comments.find(c=>c.id===cid);
-        const inputDom = document.querySelector(`#bottom-reply-${cid} textarea`);
-        const val = inputDom.value.trim();
-        if(!val)return alert("回复内容不能为空");
-        comment.reply.push({
-            name:"作者",
-            content:val,
-            time:new Date().toLocaleString()
-        });
+        let c=platformData.comments.find(x=>x.id===cid);
+        let inp=document.querySelector(`#bottom-reply-${cid} textarea`);
+        let val=inp.value.trim();
+        if(!val)return;
+        c.reply.push({name:"作者",content:val,time:new Date().toLocaleString()});
         localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
         renderComments();
     }
     function delBottomComment(cid){
-        if(!isAuthor||!confirm("确认删除该评论？"))return;
-        platformData.comments = platformData.comments.filter(c=>c.id!==cid);
+        if(!isAuthor||!confirm("删除评论？"))return;
+        platformData.comments=platformData.comments.filter(x=>x.id!==cid);
         localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
         renderComments();
     }
-
-    function renderComments() {
-        const listEl = document.getElementById("commentList");
-        listEl.innerHTML = "";
-        const comments = platformData.comments.filter(c => c.articleId === currentArticleId);
-        comments.forEach(c => {
-            let replyHtml = "";
-            if(c.reply && c.reply.length>0){
+    function renderComments(){
+        let list=document.getElementById("commentList");list.innerHTML="";
+        let arr=platformData.comments.filter(c=>c.articleId===currentArticleId);
+        arr.forEach(c=>{
+            let repHtml="";
+            if(c.reply&&c.reply.length){
                 c.reply.forEach(r=>{
-                    replyHtml += `<div style="margin-top:6px;padding:6px;background:#f5f0e6;border-radius:4px;font-size:13px;">
+                    repHtml+=`<div style="margin-top:5px;padding:5px;background:#f5f0e6;border-radius:4px;font-size:clamp(11px,0.8vw,13px);">
                         <span class="author-tag">${r.name}</span> ${r.time}：${r.content}
                     </div>`;
                 });
             }
-            let optHtml = isAuthor ? `
+            let optHtml=isAuthor?`
                 <span class="reply-btn" onclick="toggleBottomReply('${c.id}')">回复</span>
                 <span class="del-cmt-btn" onclick="delBottomComment('${c.id}')">删除</span>
-                <div id="bottom-reply-${c.id}" style="display:none;margin-top:8px;">
-                    <textarea placeholder="作者回复内容" style="width:100px;height:40px;"></textarea>
-                    <button class="submit-btn" style="font-size:12px;padding:2px 6px;margin-left:4px;" onclick="submitBottomReply('${c.id}')">提交</button>
+                <div id="bottom-reply-${c.id}" style="display:none;margin-top:6px;">
+                    <textarea placeholder="回复内容" style="width:100%;height:40px;"></textarea>
+                    <button class="submit-btn" onclick="submitBottomReply('${c.id}')">提交</button>
                 </div>
-            ` : "";
-            listEl.innerHTML += `
+            `:"";
+            list.innerHTML+=`
                 <div class="comment-item">
-                    <div class="comment-name">${c.user} · ${c.time} ${optHtml}</div>
-                    <div>${c.content}</div>
-                    ${replyHtml}
+                    <div class="comment-name">${c.user} ${c.time} ${optHtml}</div>
+                    <div>${c.content}</div>${repHtml}
                 </div>
             `;
         });
     }
-
-    document.getElementById("searchInput").addEventListener("keydown",function(e){
-        if(e.key === "Enter") searchArticle();
-    });
-
-    window.onload = function() {
-        if (platformData.categories.length === 0) {
-            platformData.categories.push({ id: "default", name: "默认CP" });
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        }
-        currentCategoryId = platformData.categories[0].id;
-        renderCategories();
-        renderArticles();
-    }
+    document.getElementById("searchInput").addEventListener("keydown",e=>e.key==="Enter"&&searchArticle());
+    window.onload=()=>{
+        if(!platformData.categories.length)platformData.categories.push({id:"default",name:"默认分类"});
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        currentCategoryId=platformData.categories[0].id;
+        renderCategories();renderArticles();
+    };
 </script>
 </body>
 </html>
