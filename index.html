@@ -65,10 +65,22 @@
             border: 1px solid transparent;
             white-space: nowrap;
             background: var(--card-color);
+            position: relative;
         }
         .category-item.active, .status-item.active {
             border-color: var(--border-color);
             background: var(--theme-color);
+        }
+        .cate-edit-btn{
+            position:absolute;
+            right:4px;
+            top:2px;
+            font-size:10px;
+            color:#888;
+            display:none;
+        }
+        .category-item:hover .cate-edit-btn{
+            display:block;
         }
         .add-category-btn {
             padding: clamp(5px,1vw,8px) clamp(8px,1.5vw,12px);
@@ -370,9 +382,10 @@
 
 <!-- 弹窗 -->
 <div class="modal-mask" id="categoryModal"><div class="modal-box"><div>新增分类</div><input type="text" id="newCategoryName"><div style="margin-top:8px;"><button class="modal-btn" onclick="addCategory()">确定</button><button class="modal-btn" onclick="closeCategoryModal()">取消</button></div></div></div>
+<div class="modal-mask" id="editCateModal"><div class="modal-box"><div>修改分类名称</div><input type="text" id="editCateName"><div style="margin-top:8px;"><button class="modal-btn" onclick="saveCateEdit()">确定</button><button class="modal-btn" onclick="closeCateEditModal()">取消</button></div></div></div>
 <div class="modal-mask" id="articleModal"><div class="modal-box"><div>新增文章</div><input type="text" id="newArticleTitle"><div style="margin-top:8px;"><button class="modal-btn" onclick="addArticle()">确定</button><button class="modal-btn" onclick="closeArticleModal()">取消</button></div></div></div>
 <div class="modal-mask" id="moveModal"><div class="modal-box"><div>移动分类</div><select id="moveCategorySelect"></select><div style="margin-top:8px;"><button class="modal-btn" onclick="confirmMoveArticle()">确定</button><button class="modal-btn" onclick="closeMoveModal()">取消</button></div></div></div>
-<div class="modal-mask" id="pwdModal"><div class="modal-box"><div>输入作者密码</div><input type="password" id="pwdInput" placeholder="密码：123456"><div style="margin-top:8px;"><button class="modal-btn" onclick="checkPwd()">解锁</button><button class="modal-btn" onclick="closePwdModal()">取消</button></div></div></div>
+<div class="modal-mask" id="pwdModal"><div class="modal-box"><div>输入作者密码</div><input type="password" id="pwdInput" placeholder="请输入密码"><div style="margin-top:8px;"><button class="modal-btn" onclick="checkPwd()">解锁</button><button class="modal-btn" onclick="closePwdModal()">取消</button></div></div></div>
 <div class="modal-mask" id="editModal"><div class="modal-box"><div>编辑内容</div><textarea id="editContent" style="width:100%;height:220px;margin:8px 0;"></textarea><div class="indent-check"><label><input type="checkbox" id="indentSwitch"> 全文首行缩进两格</label></div><div style="margin-top:8px;"><button class="modal-btn" onclick="saveEditContent()">保存</button><button class="modal-btn" onclick="closeEditModal()">取消</button></div></div></div>
 
 <!-- 导入文件框 -->
@@ -385,6 +398,7 @@ const AUTHOR_PWD = "123456";
 let isAuthor = false, hasAuthorAuth = false;
 let currentCategoryId = null, currentArticleId = null;
 let currentFilterStatus = "all";
+let editCateId = "";
 
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
     categories: [{ id: "default", name: "默认分类" }],
@@ -448,7 +462,10 @@ function checkPwd() {
         hasAuthorAuth = true; toggleMode(); closePwdModal(); alert("解锁成功");
     } else alert("密码错误");
 }
-function closePwdModal() { document.getElementById("pwdModal").style.display = "none"; }
+function closePwdModal() { 
+    document.getElementById("pwdModal").style.display = "none";
+    document.getElementById("pwdInput").value = "";
+}
 
 // 分类
 function openCategoryModal(){document.getElementById("categoryModal").style.display="flex";}
@@ -460,13 +477,38 @@ function addCategory(){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
     renderCategories();closeCategoryModal();
 }
+
+// 修改分类名称
+function openEditCateModal(id,name){
+    editCateId = id;
+    document.getElementById("editCateName").value = name;
+    document.getElementById("editCateModal").style.display = "flex";
+}
+function closeCateEditModal(){
+    document.getElementById("editCateModal").style.display = "none";
+}
+function saveCateEdit(){
+    const newName = document.getElementById("editCateName").value.trim();
+    if(!newName) return;
+    let idx = data.categories.findIndex(item=>item.id === editCateId);
+    if(idx > -1){
+        data.categories[idx].name = newName;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+        renderCategories();
+    }
+    closeCateEditModal();
+}
+
 function renderCategories(){
     const el = document.getElementById("categoryList");el.innerHTML="";
     data.categories.forEach(c=>{
         const d = document.createElement("div");
         d.className = "category-item"+(c.id===currentCategoryId?" active":"");
-        d.innerText = c.name;
-        d.onclick=()=>{currentCategoryId=c.id;renderArticles();renderCategories();};
+        d.innerHTML = `${c.name}<span class="cate-edit-btn" onclick="openEditCateModal('${c.id}','${c.name}')">编辑</span>`;
+        d.onclick=(e)=>{
+            if(e.target.classList.contains("cate-edit-btn")) return;
+            currentCategoryId=c.id;renderArticles();renderCategories();
+        };
         el.appendChild(d);
     });
 }
@@ -519,7 +561,7 @@ function renderArticles(){
     const key = document.getElementById("searchInput").value.toLowerCase();
     let list = data.articles.filter(a=>a.categoryId===currentCategoryId);
     if(key)list=list.filter(a=>a.title.toLowerCase().includes(key));
-    if(currentFilterStatus!=="all")list=list.filter(a=>a.status===currentFilterStatus);
+    if(currentFilterStatus!=="all")list.filter(a=>a.status===currentFilterStatus);
     list.forEach(art=>{
         const card = document.createElement("div");card.className="article-card";
         card.innerHTML=`<div class="article-cover">${art.title}</div>
@@ -616,13 +658,19 @@ function showInlineComments(){
     for(const idx in ic){
         const el = document.getElementById(`inline-comment-list-${idx}`);
         if(!el)continue;
-        ic[idx].forEach(c=>{
+        ic[idx].forEach((c,i)=>{
             el.innerHTML+=`<div class="comment-item">
                 <div class="comment-name">${c.nickname} ${c.isAuthor?'<span class="author-tag">作者</span>':''}
                 ${isAuthor?'<span class="del-cmt-btn" onclick="delInlineComment('+idx+','+i+')">删除</span>':''}</div>
                 <div>${c.content}</div></div>`;
         });
     }
+}
+function delInlineComment(idx,i){
+    if(!confirm("删除该段落评论？"))return;
+    data.inlineComments[currentArticleId][idx].splice(i,1);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    showInlineComments();
 }
 
 function goBack(){
