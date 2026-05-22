@@ -218,7 +218,12 @@
             line-height: 1.9;
             font-size: 16px;
             color: #333;
-            white-space: pre-wrap;
+        }
+        .article-paragraph {
+            margin-bottom: 10px;
+        }
+        .article-paragraph.indent {
+            text-indent: 2em;
         }
         .highlight-text {
             background-color: #fff3cd;
@@ -231,6 +236,17 @@
             background: #f8f5ee;
             border-radius: 4px;
             border-left: 3px solid #d4b886;
+            position: relative;
+        }
+        .close-comment-btn {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
         }
         .inline-comment-box textarea {
             width: 100%;
@@ -246,11 +262,27 @@
             border-radius: 4px;
             margin-bottom: 6px;
             font-size: 14px;
+            position: relative;
         }
         .inline-comment-list .comment-name {
             font-size: 12px;
             color: #72624c;
             margin-bottom: 3px;
+        }
+        .author-tag {
+            color: #b35050;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .reply-btn,.del-cmt-btn {
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .reply-box {
+            margin-top: 5px;
+            display: none;
         }
 
         .comment-area {
@@ -307,6 +339,7 @@
             margin-bottom: 10px;
             border: 1px solid #f0e9df;
             font-size: 14px;
+            position: relative;
         }
         .comment-name {
             color: #72624c;
@@ -346,6 +379,9 @@
             cursor: pointer;
             font-family: SimSun;
             margin-right:8px;
+        }
+        .indent-check {
+            margin:8px 0;
         }
     </style>
 </head>
@@ -452,6 +488,18 @@
     </div>
 </div>
 
+<div class="modal-mask" id="editModal">
+    <div class="modal-box" style="width:600px;">
+        <div>编辑文章内容</div>
+        <textarea id="editContent" style="width:100%;height:300px;margin:10px 0;"></textarea>
+        <div class="indent-check">
+            <label><input type="checkbox" id="indentSwitch"> 全文首行缩进两格</label>
+        </div>
+        <button class="modal-btn" onclick="saveEditContent()">保存</button>
+        <button class="modal-btn" onclick="closeEditModal()">取消</button>
+    </div>
+</div>
+
 <script>
     const STORAGE_KEY = "cp_article_shelf";
     const AUTHOR_PWD = "123456";
@@ -485,6 +533,7 @@
             el.style.display = isAuthor ? "flex" : "none";
         });
         document.getElementById("modeToggleBtn").innerText = isAuthor ? "进入读者模式" : "进入作者模式";
+        openReader(currentArticleId);
     }
     function checkPwd() {
         if (document.getElementById("pwdInput").value.trim() === AUTHOR_PWD) {
@@ -653,8 +702,131 @@
 
     function renderArticleBody(art) {
         const container = document.getElementById("articleBodyContainer");
-        container.innerHTML = art.content.replace(/\n/g, "<br>");
-        inlineComments = {};
+        const paragraphs = art.content.split("\n");
+        container.innerHTML = "";
+        inlineComments = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_inline_${currentArticleId}`)) || {};
+
+        paragraphs.forEach((p, idx) => {
+            const paraId = `para-${idx}`;
+            const paraEl = document.createElement("div");
+            paraEl.className = "article-paragraph";
+            paraEl.id = paraId;
+            paraEl.textContent = p;
+
+            const commentBox = document.createElement("div");
+            commentBox.className = "inline-comment-box";
+            commentBox.id = `comment-box-${idx}`;
+            commentBox.style.display = "none";
+            commentBox.innerHTML = `
+                <button class="close-comment-btn" onclick="closeInlineComment(${idx})">×</button>
+                <textarea placeholder="写下这段的细节评价"></textarea>
+                <button class="submit-btn" style="font-size:12px;padding:4px 8px" onclick="addInlineComment(${idx})">提交评价</button>
+                <div class="inline-comment-list" id="inline-comment-list-${idx}"></div>
+            `;
+
+            container.appendChild(paraEl);
+            container.appendChild(commentBox);
+
+            if (inlineComments[idx]) {
+                showCommentList(idx);
+            }
+        });
+
+        container.onmouseup = function () {
+            const sel = window.getSelection();
+            const text = sel.toString().trim();
+            if (!text) return;
+            const range = sel.getRangeAt(0);
+            const para = range.startContainer.parentElement.closest(".article-paragraph");
+            if (!para) return;
+            const idx = para.id.split("-")[1];
+            const box = document.getElementById(`comment-box-${idx}`);
+            box.style.display = "block";
+
+            const highlight = document.createElement("span");
+            highlight.className = "highlight-text";
+            highlight.textContent = text;
+            range.deleteContents();
+            range.insertNode(highlight);
+            sel.removeAllRanges();
+        };
+    }
+
+    function closeInlineComment(idx) {
+        document.getElementById(`comment-box-${idx}`).style.display = "none";
+    }
+
+    function showCommentList(idx) {
+        const list = document.getElementById(`inline-comment-list-${idx}`);
+        list.innerHTML = "";
+        if (!inlineComments[idx]) return;
+        inlineComments[idx].forEach((c, i) => {
+            list.innerHTML += `
+                <div class="comment-item" data-cid="${i}">
+                    <div class="comment-name">
+                        ${c.nickname} · ${c.time}
+                        ${c.isAuthor ? '<span class="author-tag">作者回复</span>' : ''}
+                        ${isAuthor ? `<span class="reply-btn" onclick="toggleReply(${idx},${i})">回复</span><span class="del-cmt-btn" onclick="delInlineComment(${idx},${i})">删除</span>` : ''}
+                    </div>
+                    <div>${c.content}</div>
+                    <div class="reply-box" id="reply-box-${idx}-${i}">
+                        <textarea placeholder="写下作者回复" style="width:100%;height:60px;"></textarea>
+                        <button class="submit-btn" style="font-size:12px;padding:4px 8px;margin-top:5px" onclick="submitReply(${idx},${i})">提交回复</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function addInlineComment(idx) {
+        const box = document.getElementById(`comment-box-${idx}`);
+        const textarea = box.querySelector("textarea");
+        const content = textarea.value.trim();
+        const nickname = document.getElementById("nickname").value.trim() || "匿名";
+        if (!content) return alert("请输入评价内容");
+
+        if (!inlineComments[idx]) inlineComments[idx] = [];
+        inlineComments[idx].push({
+            nickname,
+            content,
+            time: new Date().toLocaleString(),
+            isAuthor: false
+        });
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
+        textarea.value = "";
+        showCommentList(idx);
+        alert("评价已提交");
+    }
+
+    function toggleReply(idx, i) {
+        const box = document.getElementById(`reply-box-${idx}-${i}`);
+        box.style.display = box.style.display === "block" ? "none" : "block";
+    }
+    function submitReply(idx, i) {
+        const box = document.getElementById(`reply-box-${idx}-${i}`);
+        const textarea = box.querySelector("textarea");
+        const content = textarea.value.trim();
+        if (!content || !isAuthor) return alert("无权限或内容为空");
+
+        inlineComments[idx].push({
+            nickname: "作者",
+            content,
+            time: new Date().toLocaleString(),
+            isAuthor: true
+        });
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
+        textarea.value = "";
+        box.style.display = "none";
+        showCommentList(idx);
+        alert("作者回复已提交");
+    }
+
+    function delInlineComment(idx, i) {
+        if (!isAuthor || !confirm("确定删除这条评价？")) return;
+        inlineComments[idx].splice(i, 1);
+        if (inlineComments[idx].length === 0) delete inlineComments[idx];
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
+        showCommentList(idx);
     }
 
     function goBack() {
@@ -662,14 +834,29 @@
         document.querySelector(".bookshelf-view").style.display = "flex";
         currentArticleId = null;
     }
+
     function toggleEdit() {
         if (!isAuthor) return alert("无编辑权限");
-        let cont = prompt("编辑文章内容：",document.getElementById("articleBodyContainer").innerText);
-        if(cont===null)return;
+        const art = platformData.articles.find(a=>a.id===currentArticleId);
+        document.getElementById("editContent").value = art.content;
+        document.getElementById("indentSwitch").checked = false;
+        document.getElementById("editModal").style.display = "flex";
+    }
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+    function saveEditContent() {
+        let content = document.getElementById("editContent").value;
+        const needIndent = document.getElementById("indentSwitch").checked;
+        if (needIndent) {
+            content = content.replace(/^/gm, "　　");
+        }
         const idx = platformData.articles.findIndex(a=>a.id===currentArticleId);
-        if(idx>-1) platformData.articles[idx].content = cont;
+        if(idx>-1) platformData.articles[idx].content = content;
         localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        closeEditModal();
         openReader(currentArticleId);
+        alert("文章已保存（缩进已" + (needIndent ? "开启" : "关闭") + "）");
     }
     function saveArticle() {
         alert("已自动保存编辑内容");
@@ -684,21 +871,66 @@
             articleId: currentArticleId,
             user: nick,
             content: text,
-            time: new Date().toLocaleString()
+            time: new Date().toLocaleString(),
+            reply: []
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
         document.getElementById("comment-input").value = "";
         renderComments();
     }
+
+    // 文末评论回复删除
+    function toggleBottomReply(cid){
+        const dom = document.getElementById(`bottom-reply-${cid}`);
+        dom.style.display = dom.style.display==="block"?"none":"block";
+    }
+    function submitBottomReply(cid){
+        if(!isAuthor)return;
+        const comment = platformData.comments.find(c=>c.id===cid);
+        const inputDom = document.querySelector(`#bottom-reply-${cid} textarea`);
+        const val = inputDom.value.trim();
+        if(!val)return alert("回复内容不能为空");
+        comment.reply.push({
+            name:"作者",
+            content:val,
+            time:new Date().toLocaleString()
+        });
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        renderComments();
+    }
+    function delBottomComment(cid){
+        if(!isAuthor||!confirm("确认删除该评论？"))return;
+        platformData.comments = platformData.comments.filter(c=>c.id!==cid);
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
+        renderComments();
+    }
+
     function renderComments() {
         const listEl = document.getElementById("commentList");
         listEl.innerHTML = "";
         const comments = platformData.comments.filter(c => c.articleId === currentArticleId);
         comments.forEach(c => {
+            let replyHtml = "";
+            if(c.reply && c.reply.length>0){
+                c.reply.forEach(r=>{
+                    replyHtml += `<div style="margin-top:6px;padding:6px;background:#f5f0e6;border-radius:4px;font-size:13px;">
+                        <span class="author-tag">${r.name}</span> ${r.time}：${r.content}
+                    </div>`;
+                });
+            }
+            let optHtml = isAuthor ? `
+                <span class="reply-btn" onclick="toggleBottomReply('${c.id}')">回复</span>
+                <span class="del-cmt-btn" onclick="delBottomComment('${c.id}')">删除</span>
+                <div id="bottom-reply-${c.id}" style="display:none;margin-top:8px;">
+                    <textarea placeholder="作者回复内容" style="width:100px;height:40px;"></textarea>
+                    <button class="submit-btn" style="font-size:12px;padding:2px 6px;margin-left:4px;" onclick="submitBottomReply('${c.id}')">提交</button>
+                </div>
+            ` : "";
             listEl.innerHTML += `
                 <div class="comment-item">
-                    <div class="comment-name">${c.user} · ${c.time}</div>
+                    <div class="comment-name">${c.user} · ${c.time} ${optHtml}</div>
                     <div>${c.content}</div>
+                    ${replyHtml}
                 </div>
             `;
         });
