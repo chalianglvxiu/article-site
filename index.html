@@ -24,7 +24,6 @@
             box-shadow: 0 1px 8px rgba(80,60,40,0.08);
             overflow: hidden;
         }
-
         .top-bar {
             background: #eae5dd;
             padding: 12px 15px;
@@ -46,13 +45,14 @@
             background: #f3efe6;
             color: #443c30;
             cursor: pointer;
-            font-family: SimSun;
             font-size: 14px;
         }
         .top-bar button:hover, .pwd-btn:hover {
             background: #e8e2d5;
         }
-
+        .author-ctrl {
+            display: none;
+        }
         .content-wrap {
             display: flex;
             min-height: 480px;
@@ -62,13 +62,11 @@
             .content-wrap{flex-direction:column;}
             .sidebar{width:100%;max-height:220px;overflow-y:auto;}
         }
-
         .sidebar {
             width: 200px;
             background: #f5f1e9;
             border-right: 1px solid #e0d9cb;
             padding: 15px;
-            display: block !important;
         }
         .sidebar h3 {
             font-size: 15px;
@@ -96,14 +94,13 @@
             border-color: #b8af9e;
         }
         .del-btn {
+            display: none;
             color: #995544;
             background: none;
             border: none;
             cursor: pointer;
             font-size: 12px;
-            display: none;
         }
-
         .main-content {
             flex: 1;
             padding: 20px;
@@ -129,7 +126,6 @@
             white-space: pre-wrap;
             background: transparent;
         }
-
         .toc {
             background: #f5f1e9;
             padding: 10px 12px;
@@ -149,7 +145,6 @@
             text-decoration: none;
             font-size: 14px;
         }
-
         .float-comment-box {
             position: absolute;
             width: 280px;
@@ -168,14 +163,12 @@
             border-radius: 4px;
             resize: none;
             min-height: 50px;
-            font-family: SimSun;
             font-size: 14px;
         }
         .close-float {
             background: #e0d9cb !important;
             color: #443c30 !important;
         }
-
         .comment-area {
             padding: 20px;
             border-top: 1px solid #e0d9cb;
@@ -199,7 +192,6 @@
             border: 1px solid #ddd3c2;
             border-radius: 4px;
             outline: none;
-            font-family: SimSun;
             background: #fffdf9;
             font-size: 14px;
         }
@@ -211,7 +203,6 @@
             outline: none;
             resize: none;
             min-height: 40px;
-            font-family: SimSun;
             background: #fffdf9;
             font-size: 14px;
         }
@@ -222,7 +213,6 @@
             border: 1px solid #c9c2b4;
             border-radius: 4px;
             cursor: pointer;
-            font-family: SimSun;
             font-size: 14px;
         }
         .comment-item {
@@ -250,9 +240,6 @@
             padding: 0 3px;
             border-radius: 3px;
         }
-        .author-only {
-            display: none !important;
-        }
         .pwd-mask {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -271,7 +258,6 @@
             margin: 8px 0;
             border: 1px solid #ddd3c2;
             border-radius: 4px;
-            font-family: SimSun;
         }
     </style>
 </head>
@@ -281,7 +267,7 @@
         <h1>个人文章阅览站</h1>
         <div>
             <button onclick="openPwdWindow()">作者入口</button>
-            <div class="author-only">
+            <div class="author-ctrl">
                 <button onclick="newArticle()">新建</button>
                 <button onclick="saveArticle()">保存</button>
                 <button onclick="toggleEdit()">编辑</button>
@@ -291,13 +277,13 @@
 
     <div class="content-wrap">
         <div class="sidebar">
-            <h3>文章列表</h3>
+            <h3>文章目录</h3>
             <div id="articleList"></div>
         </div>
 
         <div class="main-content">
             <div class="toc" id="tocBlock" style="display:none;">
-                <h4>目录</h4>
+                <h4>章节目录</h4>
                 <div id="tocContent"></div>
             </div>
             <input type="text" class="article-title-input" id="articleTitle" placeholder="文章标题" readonly>
@@ -327,7 +313,7 @@
 
 <div id="pwdMask" class="pwd-mask" style="display:none;">
     <div class="pwd-box">
-        <div>输入作者密码</div>
+        <div>输入作者密码解锁管理权限</div>
         <input type="password" id="pwdInput" placeholder="请输入密码">
         <br>
         <button class="pwd-btn" onclick="checkPwd()">确认解锁</button>
@@ -359,10 +345,10 @@
         let v = document.getElementById("pwdInput").value.trim();
         if(v === AUTHOR_PWD){
             isAuthor = true;
-            document.querySelectorAll(".author-only").forEach(e=>e.style.display="inline-block");
+            document.querySelector(".author-ctrl").style.display = "inline-block";
             document.querySelectorAll(".del-btn").forEach(e=>e.style.display="inline");
             closePwdWindow();
-            alert("已进入作者模式");
+            alert("已进入作者管理模式");
             renderArticleList();
         }else{
             alert("密码错误");
@@ -407,7 +393,7 @@
     }
 
     function saveArticle(){
-        if(!isAuthor)return alert("无权限");
+        if(!isAuthor)return alert("无管理权限");
         if(!currentArticleId)return;
         let t = document.getElementById("articleTitle").value.trim();
         let c = document.getElementById("articleBody").value.trim();
@@ -424,7 +410,7 @@
 
     function deleteArticle(id){
         if(!isAuthor)return;
-        if(!confirm("确定删除？"))return;
+        if(!confirm("确定删除该文章？"))return;
         platformData.articles = platformData.articles.filter(a=>a.id!==id);
         platformData.comments = platformData.comments.filter(c=>c.articleId!==id);
         if(currentArticleId===id){
@@ -441,7 +427,7 @@
     }
 
     function toggleEdit(){
-        if(!isAuthor)return alert("无权限");
+        if(!isAuthor)return alert("无编辑权限");
         isEditMode = !isEditMode;
         document.getElementById("articleBody").readOnly = !isEditMode;
         document.getElementById("articleTitle").readOnly = !isEditMode;
@@ -503,7 +489,7 @@
     function addGlobalComment(){
         let n = document.getElementById("nickname").value.trim()||"匿名";
         let t = document.getElementById("comment-input").value.trim();
-        if(!t||!currentArticleId)return alert("请输入评论");
+        if(!t||!currentArticleId)return alert("请输入评论内容");
         platformData.comments.push({
             id:Date.now()+"",
             articleId:currentArticleId,
