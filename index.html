@@ -20,6 +20,7 @@
             height: 100vh;
         }
 
+        /* 左侧侧边栏 */
         .sidebar {
             width: 180px;
             background: #f5f1e9;
@@ -63,6 +64,7 @@
             background: #efe9dd;
         }
 
+        /* 顶部搜索栏 */
         .search-wrap{
             padding:10px 20px;
             background:#eae5dd;
@@ -84,6 +86,7 @@
             cursor:pointer;
         }
 
+        /* 右侧主区域 */
         .main-area {
             flex: 1;
             display: flex;
@@ -150,6 +153,7 @@
             margin-bottom: 4px;
         }
         .article-actions {
+            display: none;
             margin-top: 5px;
             display: flex;
             gap:5px;
@@ -162,6 +166,7 @@
             font-size: 12px;
         }
 
+        /* 文章阅读页面 */
         .reader-view {
             flex: 1;
             display: none;
@@ -211,32 +216,47 @@
             color: #332b20;
             background: transparent;
         }
-        .article-body {
-            width: 100%;
-            min-height: 400px;
+        .article-body-container {
             line-height: 1.9;
             font-size: 16px;
             color: #333;
-            border: none;
-            outline: none;
-            resize: none;
             white-space: pre-wrap;
             background: transparent;
         }
-
-        .anno-area{
-            margin:20px 0;
-            padding:15px;
-            border:1px dashed #ccc;
+        .highlight-text {
+            background-color: #fff3cd;
+            padding: 0 2px;
+            border-radius: 2px;
         }
-        .anno-text{
-            width:100%;
-            height:100px;
-            padding:8px;
-            resize:none;
-            margin:8px 0;
+        .inline-comment-box {
+            margin: 10px 0 20px 0;
+            padding: 10px;
+            background: #f8f5ee;
+            border-radius: 4px;
+            border-left: 3px solid #d4b886;
+        }
+        .inline-comment-box textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd3c2;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            resize: none;
+        }
+        .inline-comment-list .comment-item {
+            padding: 8px;
+            background: #fff;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .inline-comment-list .comment-name {
+            font-size: 12px;
+            color: #72624c;
+            margin-bottom: 3px;
         }
 
+        /* 文末评论区 */
         .comment-area {
             padding: 20px;
             border-top: 1px solid #e0d9cb;
@@ -283,42 +303,21 @@
             cursor: pointer;
             font-size: 14px;
         }
-        .comment-item,.anno-item {
+        .comment-item {
             padding: 12px;
             background: #fffdf9;
             border-radius: 6px;
             margin-bottom: 10px;
             border: 1px solid #f0e9df;
             font-size: 14px;
-            position: relative;
         }
-        .comment-name,.anno-name {
+        .comment-name {
             color: #72624c;
             margin-bottom: 4px;
             font-size: 13px;
         }
-        .oper-btn{
-            margin-top:6px;
-            display:flex;
-            gap:8px;
-        }
-        .del-eval-btn,.reply-btn{
-            font-size:12px;
-            cursor:pointer;
-            color:#888;
-        }
-        .reply-box{
-            margin-top:8px;
-            padding:8px;
-            background:#f9f6ee;
-            border-radius:4px;
-        }
-        .reply-input{
-            width:100%;
-            padding:4px;
-            margin-bottom:4px;
-        }
 
+        /* 弹窗 */
         .modal-mask {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -356,6 +355,7 @@
 </head>
 <body>
 <div class="container">
+    <!-- 左侧侧边栏 -->
     <div class="sidebar">
         <h3>CP分类</h3>
         <div id="categoryList"></div>
@@ -368,26 +368,30 @@
         <div class="status-item" data-status="finished" onclick="filterByStatus('finished')">已读完</div>
     </div>
 
+    <!-- 右侧主区域 -->
     <div class="main-area">
-        <div class="top-bar">
-            <h1>我的CP文章书架</h1>
-            <div>
-                <button id="modeToggleBtn" onclick="toggleMode()">进入作者模式</button>
-                <div class="author-ctrl">
-                    <button onclick="openNewArticleModal()">新增文章</button>
+        <!-- 书架页面 -->
+        <div class="bookshelf-view">
+            <div class="top-bar">
+                <h1>我的CP文章书架</h1>
+                <div>
+                    <button id="modeToggleBtn" onclick="toggleMode()">进入作者模式</button>
+                    <div class="author-ctrl">
+                        <button onclick="openNewArticleModal()">新增文章</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="search-wrap">
-            <input id="searchInput" placeholder="输入文章标题搜索">
-            <button class="search-btn" onclick="searchArticle()">搜索</button>
-        </div>
+            <!-- 搜索框 -->
+            <div class="search-wrap">
+                <input id="searchInput" placeholder="输入文章标题搜索">
+                <button class="search-btn" onclick="searchArticle()">搜索</button>
+            </div>
 
-        <div class="bookshelf-view">
             <div class="article-grid" id="articleGrid"></div>
         </div>
 
+        <!-- 文章阅读页面 -->
         <div class="reader-view" id="readerView">
             <div class="reader-header">
                 <button class="back-btn" onclick="goBack()">← 返回书架</button>
@@ -404,15 +408,9 @@
                 </div>
             </div>
             <div class="reader-content">
-                <textarea class="article-body" id="readerBody" placeholder="文章内容..." readonly></textarea>
-
-                <div class="anno-area">
-                    <h4>段落评价批注</h4>
-                    <textarea class="anno-text" id="annoInput" placeholder="写下段落细节评价"></textarea>
-                    <button class="submit-btn" onclick="addAnno()">提交批注</button>
-                    <div id="annoList"></div>
-                </div>
+                <div id="articleBodyContainer" class="article-body-container"></div>
             </div>
+            <!-- 文末整体评论 -->
             <div class="comment-area">
                 <h3 class="comment-title">文末整体评价</h3>
                 <div class="input-box">
@@ -426,6 +424,7 @@
     </div>
 </div>
 
+<!-- 新增CP分类弹窗 -->
 <div class="modal-mask" id="categoryModal">
     <div class="modal-box">
         <div>新增CP分类</div>
@@ -436,6 +435,7 @@
     </div>
 </div>
 
+<!-- 新增文章弹窗 -->
 <div class="modal-mask" id="articleModal">
     <div class="modal-box">
         <div>新增文章</div>
@@ -446,6 +446,7 @@
     </div>
 </div>
 
+<!-- 移动文章分类弹窗 -->
 <div class="modal-mask" id="moveModal">
     <div class="modal-box">
         <div>移动文章至其他CP分类</div>
@@ -456,6 +457,7 @@
     </div>
 </div>
 
+<!-- 密码弹窗 -->
 <div class="modal-mask" id="pwdModal">
     <div class="modal-box">
         <div>输入作者密码解锁管理权限</div>
@@ -474,19 +476,20 @@
     let currentCategoryId = null;
     let currentArticleId = null;
     let currentFilterStatus = "all";
+    let inlineComments = {};
 
     let platformData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         categories: [],
         articles: [],
-        comments: [],
-        annotations: [],
-        commentReply: []
+        comments: []
     };
 
+    // 文章搜索
     function searchArticle(){
         renderArticles();
     }
 
+    // --- 模式切换 ---
     function toggleMode() {
         if (!hasAuthorAuth) {
             document.getElementById("pwdModal").style.display = "flex";
@@ -500,8 +503,6 @@
             el.style.display = isAuthor ? "flex" : "none";
         });
         document.getElementById("modeToggleBtn").innerText = isAuthor ? "进入读者模式" : "进入作者模式";
-        renderComments();
-        renderAnnotations();
     }
     function checkPwd() {
         if (document.getElementById("pwdInput").value.trim() === AUTHOR_PWD) {
@@ -517,6 +518,7 @@
         document.getElementById("pwdModal").style.display = "none";
     }
 
+    // --- CP分类管理 ---
     function openCategoryModal() {
         document.getElementById("categoryModal").style.display = "flex";
         document.getElementById("newCategoryName").value = "";
@@ -550,6 +552,7 @@
         renderCategories();
     }
 
+    // --- 阅读状态筛选与设置 ---
     function filterByStatus(status){
         currentFilterStatus = status;
         document.querySelectorAll(".status-item").forEach(item=>{
@@ -568,6 +571,7 @@
         renderArticles();
     }
 
+    // --- 文章移动分类功能 ---
     function openMoveModal(artId){
         currentArticleId = artId;
         const select = document.getElementById("moveCategorySelect");
@@ -595,6 +599,7 @@
         }
     }
 
+    // --- 文章管理 ---
     function openNewArticleModal() {
         if (!currentCategoryId) return alert("请先选择一个CP分类");
         document.getElementById("articleModal").style.display = "flex";
@@ -653,23 +658,106 @@
         if (!confirm("确定删除这篇文章？")) return;
         platformData.articles = platformData.articles.filter(a => a.id !== id);
         platformData.comments = platformData.comments.filter(c => c.articleId !== id);
-        platformData.annotations = platformData.annotations.filter(n=>n.articleId!==id);
-        platformData.commentReply = platformData.commentReply.filter(r=>r.articleId!==id);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
         renderArticles();
     }
 
+    // --- 阅读/编辑文章 + 划线评论 ---
     function openReader(id) {
         currentArticleId = id;
         const art = platformData.articles.find(a => a.id === id);
         if (!art) return;
         document.getElementById("readerTitle").value = art.title;
-        document.getElementById("readerBody").value = art.content;
         document.querySelector(".bookshelf-view").style.display = "none";
         document.getElementById("readerView").style.display = "flex";
+
+        // 渲染文章内容（按段落拆分，方便添加评论）
+        renderArticleBody(art);
         renderComments();
-        renderAnnotations();
     }
+
+    function renderArticleBody(art) {
+        const container = document.getElementById("articleBodyContainer");
+        const paragraphs = art.content.split("\n").filter(p => p.trim() !== "");
+        container.innerHTML = "";
+        inlineComments = {};
+
+        paragraphs.forEach((p, idx) => {
+            const paraId = `para-${idx}`;
+            const paraEl = document.createElement("div");
+            paraEl.className = "article-paragraph";
+            paraEl.id = paraId;
+            paraEl.innerText = p;
+            paraEl.style.marginBottom = "10px";
+
+            // 段落评论框
+            const commentBox = document.createElement("div");
+            commentBox.className = "inline-comment-box";
+            commentBox.id = `comment-box-${idx}`;
+            commentBox.style.display = "none";
+            commentBox.innerHTML = `
+                <textarea placeholder="写下这段的细节评价" onfocus="showCommentList('${idx}')"></textarea>
+                <button class="submit-btn" style="font-size:12px;padding:4px 8px" onclick="addInlineComment('${idx}')">提交评价</button>
+                <div class="inline-comment-list" id="inline-comment-list-${idx}"></div>
+            `;
+
+            container.appendChild(paraEl);
+            container.appendChild(commentBox);
+        });
+
+        // 文本选中监听，显示评论框
+        container.onmouseup = function() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && selection.toString().trim() !== "") {
+                const range = selection.getRangeAt(0);
+                const paraEl = range.startContainer.parentElement.closest(".article-paragraph");
+                if (paraEl) {
+                    const idx = paraEl.id.split("-")[1];
+                    document.getElementById(`comment-box-${idx}`).style.display = "block";
+                    // 高亮选中的文本
+                    const highlightRange = range.cloneRange();
+                    const highlightEl = document.createElement("span");
+                    highlightEl.className = "highlight-text";
+                    highlightEl.appendChild(range.extractContents());
+                    range.insertNode(highlightEl);
+                }
+            }
+        };
+    }
+
+    function showCommentList(idx) {
+        const listEl = document.getElementById(`inline-comment-list-${idx}`);
+        listEl.innerHTML = "";
+        if (inlineComments[idx]) {
+            inlineComments[idx].forEach((comment, i) => {
+                listEl.innerHTML += `
+                    <div class="comment-item">
+                        <div class="comment-name">${comment.nickname} · ${comment.time}</div>
+                        <div>${comment.content}</div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    function addInlineComment(idx) {
+        const textarea = document.querySelector(`#comment-box-${idx} textarea`);
+        const content = textarea.value.trim();
+        const nickname = document.getElementById("nickname").value.trim() || "匿名";
+        if (!content) return alert("请输入评价内容");
+
+        if (!inlineComments[idx]) inlineComments[idx] = [];
+        inlineComments[idx].push({
+            nickname: nickname,
+            content: content,
+            time: new Date().toLocaleString()
+        });
+        localStorage.setItem(`${STORAGE_KEY}_inline_${currentArticleId}`, JSON.stringify(inlineComments));
+        textarea.value = "";
+        showCommentList(idx);
+        alert("评价已提交");
+    }
+
     function goBack() {
         document.getElementById("readerView").style.display = "none";
         document.querySelector(".bookshelf-view").style.display = "block";
@@ -677,17 +765,15 @@
     }
     function toggleEdit() {
         if (!isAuthor) return alert("无编辑权限");
-        const bodyEl = document.getElementById("readerBody");
-        const titleEl = document.getElementById("readerTitle");
-        const readOnly = bodyEl.readOnly;
-        bodyEl.readOnly = !readOnly;
-        titleEl.readOnly = !readOnly;
+        const readOnly = document.getElementById("readerBody").readOnly;
+        document.getElementById("readerBody").readOnly = !readOnly;
         alert(readOnly ? "已开启编辑模式" : "已关闭编辑模式");
     }
     function saveArticle() {
         if (!isAuthor || !currentArticleId) return;
         const title = document.getElementById("readerTitle").value.trim();
-        const content = document.getElementById("readerBody").value.trim();
+        const content = prompt("请输入文章内容（换行分隔段落）：", document.getElementById("articleBodyContainer").innerText);
+        if (content === null) return;
         const idx = platformData.articles.findIndex(a => a.id === currentArticleId);
         if (idx !== -1) {
             platformData.articles[idx].title = title;
@@ -695,44 +781,10 @@
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
         alert("保存成功");
-        renderArticles();
+        openReader(currentArticleId);
     }
 
-    function addAnno(){
-        const text = document.getElementById("annoInput").value.trim();
-        if(!text||!currentArticleId)return alert("请填写段落评价");
-        platformData.annotations.push({
-            id:Date.now().toString(),
-            articleId:currentArticleId,
-            content:text,
-            time:new Date().toLocaleString()
-        });
-        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
-        document.getElementById("annoInput").value="";
-        renderAnnotations();
-    }
-    function delAnno(id){
-        platformData.annotations = platformData.annotations.filter(n=>n.id!==id);
-        localStorage.setItem(STORAGE_KEY,JSON.stringify(platformData));
-        renderAnnotations();
-    }
-    function renderAnnotations(){
-        const list = document.getElementById("annoList");
-        list.innerHTML="";
-        const listData = platformData.annotations.filter(n=>n.articleId===currentArticleId);
-        listData.forEach(item=>{
-            list.innerHTML +=`
-                <div class="anno-item">
-                    <div class="anno-name">段落评价 · ${item.time}</div>
-                    <div>${item.content}</div>
-                    <div class="oper-btn">
-                        <span class="del-eval-btn" onclick="delAnno('${item.id}')">删除</span>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
+    // --- 文末整体评论功能 ---
     function addComment() {
         const nick = document.getElementById("nickname").value.trim() || "匿名";
         const text = document.getElementById("comment-input").value.trim();
@@ -748,59 +800,26 @@
         document.getElementById("comment-input").value = "";
         renderComments();
     }
-    function delComment(id){
-        platformData.comments = platformData.comments.filter(c=>c.id!==id);
-        platformData.commentReply = platformData.commentReply.filter(r=>r.commentId!==id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        renderComments();
-    }
-    function submitReply(commentId, dom){
-        let input = dom.previousElementSibling;
-        let text = input.value.trim();
-        if(!text)return;
-        platformData.commentReply.push({
-            id:Date.now().toString(),
-            articleId:currentArticleId,
-            commentId:commentId,
-            content:text,
-            time:new Date().toLocaleString()
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(platformData));
-        renderComments();
-    }
     function renderComments() {
         const listEl = document.getElementById("commentList");
         listEl.innerHTML = "";
         const comments = platformData.comments.filter(c => c.articleId === currentArticleId);
         comments.forEach(c => {
-            let replyList = platformData.commentReply.filter(r=>r.commentId===c.id);
-            let replyHtml = "";
-            replyList.forEach(r=>{
-                replyHtml += `<div style="margin-top:6px;padding:6px;background:#f3efe6;border-radius:4px;">作者回复：${r.content}<div style="font-size:12px;color:#888">${r.time}</div></div>`;
-            });
-            let btnHtml = `<span class="del-eval-btn" onclick="delComment('${c.id}')">删除</span>`;
-            if(isAuthor){
-                btnHtml += `<span class="reply-btn" onclick="this.parentElement.nextElementSibling.style.display='block'">回复</span>`;
-            }
             listEl.innerHTML += `
                 <div class="comment-item">
                     <div class="comment-name">${c.user} · ${c.time}</div>
                     <div>${c.content}</div>
-                    <div class="oper-btn">${btnHtml}</div>
-                    <div class="reply-box" style="display:none">
-                        <input class="reply-input" placeholder="写下回复内容">
-                        <button class="submit-btn" style="font-size:12px;padding:2px 6px" onclick="submitReply('${c.id}',this)">提交回复</button>
-                    </div>
-                    ${replyHtml}
                 </div>
             `;
         });
     }
 
+    // 回车触发搜索
     document.getElementById("searchInput").addEventListener("keydown",function(e){
         if(e.key === "Enter") searchArticle();
     });
 
+    // 初始化
     window.onload = function() {
         if (platformData.categories.length === 0) {
             platformData.categories.push({ id: "default", name: "默认CP" });
