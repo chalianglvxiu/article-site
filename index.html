@@ -17,14 +17,12 @@
             line-height: 2;
             font-size: 16px;
         }
-        /* 头部标题 */
         .header {
             padding: 16px;
             text-align: center;
             border-bottom: 1px solid #eee;
             font-size: 20px;
         }
-        /* 搜索 */
         .search-box {
             padding: 10px;
             border-bottom: 1px solid #eee;
@@ -36,7 +34,6 @@
             border-radius: 4px;
             background: #fff;
         }
-        /* 工具栏 */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -53,7 +50,6 @@
             font-size: 14px;
             cursor: pointer;
         }
-        /* 文章列表 */
         .article-list {
             padding: 10px 16px;
         }
@@ -62,7 +58,6 @@
             border-bottom: 1px solid #eee;
             cursor: pointer;
         }
-        /* 阅读页：和你发的序/正文样式完全一致 */
         .read-page {
             display: none;
             padding: 24px 20px;
@@ -78,17 +73,25 @@
             text-indent: 2em;
             font-size: 16px;
         }
-        /* 划线评开关 */
+        .highlight {
+            text-decoration: underline;
+            background-color: #fdf6d3;
+        }
+        .comment-pop {
+            position: absolute;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            z-index: 999;
+            display: none;
+        }
         .toggle-mark {
             position: fixed;
             top: 12px;
             right: 12px;
             z-index: 999;
         }
-        .text-mark {
-            text-decoration: underline;
-        }
-        /* 评论区 */
         .comment-section {
             margin-top: 35px;
             padding-top: 20px;
@@ -108,7 +111,6 @@
             border-radius: 4px;
             margin-bottom: 8px;
         }
-        /* 作者后台 */
         .author-panel {
             display: none;
             padding: 20px;
@@ -130,7 +132,6 @@
             border-radius: 4px;
             margin: 8px 0;
         }
-        /* 底部按钮 */
         .footer-bar {
             text-align: center;
             padding: 12px;
@@ -139,14 +140,18 @@
     </style>
 </head>
 <body>
-<!-- 读者界面 -->
+<div id="commentPop" class="comment-pop">
+    <textarea id="popCommentInput" placeholder="对选中内容评论..." style="width:200px;height:80px;"></textarea>
+    <br>
+    <button class="btn" onclick="submitHighlightComment()">提交</button>
+    <button class="btn" onclick="closeCommentPop()">取消</button>
+</div>
+
 <div id="readerPage">
     <div class="header">山茶的文集</div>
-
     <div class="search-box">
         <input class="search-input" placeholder="搜索文章标题" oninput="searchArticle()">
     </div>
-
     <div class="toolbar">
         <div class="cate-group">
             <button class="btn" onclick="filterCate('all')">全部</button>
@@ -159,15 +164,11 @@
             <button class="btn" onclick="sortOld()">最早</button>
         </div>
     </div>
-
     <div class="article-list" id="articleList"></div>
-
-    <!-- 阅读页，和你发的图片排版完全一致 -->
     <div class="read-page" id="readPage">
-        <button class="btn toggle-mark" onclick="toggleHighlight()">关闭划线评</button>
+        <button class="btn toggle-mark" onclick="toggleHighlight()">关闭划线</button>
         <div class="read-title" id="artTitle"></div>
         <div class="read-content" id="artContent"></div>
-
         <div class="comment-section">
             <textarea class="comment-input" id="commentInput" placeholder="写下你的评论..."></textarea>
             <button class="btn" onclick="submitComment()">发表评论</button>
@@ -176,13 +177,11 @@
         <br>
         <button class="btn" onclick="backToList()">返回目录</button>
     </div>
-
     <div class="footer-bar">
         <button class="btn" onclick="verifyPwd()">进入作者模式</button>
     </div>
 </div>
 
-<!-- 作者后台界面（已修复空白问题） -->
 <div class="author-panel" id="authorPanel">
     <h3 style="margin-bottom:10px;">作者编辑后台</h3>
     <input placeholder="文章标题" id="titleInput">
@@ -195,27 +194,43 @@
     <button class="btn" onclick="autoIndent()">一键缩进排版</button>
     <button class="btn" onclick="saveArticle()">保存文章</button>
     <button class="btn" onclick="clearEdit()">清空编辑</button>
-
     <hr style="margin:20px 0;border:0;border-top:1px solid #eee;">
     <h3>文章管理</h3>
     <div id="manageList"></div>
-
     <br>
     <button class="btn" onclick="exitAuthorMode()">退出作者模式</button>
 </div>
 
 <script>
-let articles = [];
+// 初始内置文章，所有人打开均可看见
+let articles = [
+    // 在此处自行增补文章示例格式
+    /*
+    {
+        id:1,
+        title:"示例标题",
+        cate:"cate1",
+        content:"　　正文内容正文内容正文内容。",
+        comments:[]
+    }
+    */
+];
 let currentCate = "all";
 let sortType = "new";
 let currentArtId = null;
 let editArtId = null;
 let highlightOpen = true;
 const authorPwd = "shanchatea";
+let currentSelectionRange = null;
+let currentSelectionText = "";
 
-document.addEventListener("DOMContentLoaded", renderArticleList);
+document.addEventListener("DOMContentLoaded",function(){
+    renderArticleList();
+    const contentDom = document.getElementById("artContent");
+    contentDom.addEventListener("mouseup",onTextSelected);
+    contentDom.addEventListener("touchend",onTextSelected);
+});
 
-// 渲染文章列表
 function renderArticleList(){
     let showList = [...articles];
     if(sortType === "new") showList.reverse();
@@ -230,17 +245,12 @@ function renderArticleList(){
         listDom.appendChild(div);
     });
 }
-
-// 分类筛选
 function filterCate(cate){
     currentCate = cate;
     renderArticleList();
 }
-// 排序切换
 function sortNew(){sortType="new";renderArticleList();}
 function sortOld(){sortType="old";renderArticleList();}
-
-// 搜索文章
 function searchArticle(){
     let key = document.querySelector(".search-input").value.trim();
     let searchList = articles.filter(item=>item.title.includes(key));
@@ -255,51 +265,35 @@ function searchArticle(){
         listDom.appendChild(div);
     });
 }
-
-// 划线评开关
 function toggleHighlight(){
     highlightOpen = !highlightOpen;
     let btn = document.querySelector(".toggle-mark");
-    btn.innerText = highlightOpen ? "关闭划线评" : "开启划线评";
+    btn.innerText = highlightOpen ? "关闭划线" : "开启划线";
     if(currentArtId){
         let art = articles.find(a=>a.id===currentArtId);
-        document.getElementById("artContent").innerHTML = formatContent(art.content);
+        document.getElementById("artContent").innerHTML = art.content;
     }
 }
-function formatContent(text){
-    if(!highlightOpen) return text;
-    return text.split("。").map(s=>`<span class="text-mark">${s}。</span>`).join("");
-}
-
-// 打开文章阅读页
 function openArticle(id){
     currentArtId = id;
     let art = articles.find(item=>item.id===id);
     document.querySelector(".article-list").style.display = "none";
     document.getElementById("readPage").style.display = "block";
     document.getElementById("artTitle").innerText = art.title;
-    document.getElementById("artContent").innerHTML = formatContent(art.content);
+    document.getElementById("artContent").innerHTML = art.content;
     renderCommentList(art.comments);
 }
-// 返回列表
 function backToList(){
     document.getElementById("readPage").style.display = "none";
     document.querySelector(".article-list").style.display = "block";
     currentArtId = null;
 }
-
-// 评论功能（读者/作者互回复、删自己评论）
 function submitComment(){
     let inputDom = document.getElementById("commentInput");
     let content = inputDom.value.trim();
     if(!content || !currentArtId) return;
     let art = articles.find(item=>item.id===currentArtId);
-    art.comments.push({
-        cid: Date.now(),
-        name: "读者",
-        content: content,
-        isAuthor: false
-    });
+    art.comments.push({cid:Date.now(),name:"读者",content:content,isAuthor:false});
     renderCommentList(art.comments);
     inputDom.value = "";
 }
@@ -324,12 +318,7 @@ function replyComment(cid){
     let replyTxt = prompt("输入回复内容：");
     if(!replyTxt) return;
     let art = articles.find(item=>item.id===currentArtId);
-    art.comments.push({
-        cid: Date.now(),
-        name: "读者",
-        content: replyTxt,
-        isAuthor: false
-    });
+    art.comments.push({cid:Date.now(),name:"读者",content:replyTxt,isAuthor:false});
     renderCommentList(art.comments);
 }
 function delSelfComment(cid){
@@ -337,51 +326,66 @@ function delSelfComment(cid){
     art.comments = art.comments.filter(c=>c.cid!==cid);
     renderCommentList(art.comments);
 }
-
-// 密码验证切换作者模式（已修复空白问题）
+function onTextSelected(e){
+    if(!highlightOpen) return;
+    let sel = window.getSelection();
+    let text = sel.toString().trim();
+    if(!text) return;
+    currentSelectionText = text;
+    currentSelectionRange = sel.getRangeAt(0);
+    let rect = currentSelectionRange.getBoundingClientRect();
+    let pop = document.getElementById("commentPop");
+    pop.style.left = (rect.left + window.scrollX) + "px";
+    pop.style.top = (rect.bottom + window.scrollY + 5) + "px";
+    pop.style.display = "block";
+    document.getElementById("popCommentInput").value = "";
+}
+function closeCommentPop(){
+    document.getElementById("commentPop").style.display = "none";
+    currentSelectionRange = null;
+    currentSelectionText = "";
+}
+function submitHighlightComment(){
+    let txt = document.getElementById("popCommentInput").value.trim();
+    if(!txt || !currentSelectionRange) return;
+    let span = document.createElement("span");
+    span.className = "highlight";
+    currentSelectionRange.surroundContents(span);
+    let art = articles.find(item=>item.id===currentArtId);
+    art.comments.push({cid:Date.now(),name:"读者",content:"【划词评论】"+txt,isAuthor:false});
+    renderCommentList(art.comments);
+    closeCommentPop();
+}
 function verifyPwd(){
     let pwd = prompt("请输入作者密码");
     if(pwd === authorPwd){
         document.getElementById("readerPage").style.display = "none";
         document.getElementById("authorPanel").style.display = "block";
         renderManageArticle();
-    }else{
-        alert("密码错误");
-    }
+    }else alert("密码错误");
 }
 function exitAuthorMode(){
     document.getElementById("authorPanel").style.display = "none";
     document.getElementById("readerPage").style.display = "block";
     renderArticleList();
 }
-
-// 作者文章操作
 function saveArticle(){
     let title = document.getElementById("titleInput").value.trim();
     let cate = document.getElementById("cateSelect").value;
     let content = document.getElementById("contentInput").value.trim();
-    if(!title || !content){
-        alert("标题和内容不能为空");
-        return;
-    }
+    if(!title || !content) return alert("标题和内容不能为空");
     if(editArtId){
         let art = articles.find(item=>item.id===editArtId);
         art.title = title;
         art.cate = cate;
         art.content = content;
     }else{
-        articles.push({
-            id: Date.now(),
-            title: title,
-            cate: cate,
-            content: content,
-            comments: []
-        });
+        articles.push({id:Date.now(),title:title,cate:cate,content:content,comments:[]});
     }
     clearEdit();
     renderArticleList();
     renderManageArticle();
-    alert("文章保存成功");
+    alert("保存成功，更新代码后上传生效");
 }
 function clearEdit(){
     document.getElementById("titleInput").value = "";
@@ -392,11 +396,9 @@ function clearEdit(){
 function autoIndent(){
     let textDom = document.getElementById("contentInput");
     let lines = textDom.value.split("\n");
-    let newLines = lines.map(line=>line.trim() ? "　　"+line.trim() : line);
+    let newLines = lines.map(line=>line.trim()?"　　"+line.trim():line);
     textDom.value = newLines.join("\n");
 }
-
-// 文章管理列表
 function renderManageArticle(){
     let manageDom = document.getElementById("manageList");
     manageDom.innerHTML = "";
@@ -428,13 +430,11 @@ function deleteArticle(id){
 }
 function moveCateArticle(id){
     let art = articles.find(item=>item.id===id);
-    let targetCate = prompt("输入目标分类：cate1/cate2/cate3",art.cate);
+    let targetCate = prompt("输入分类：cate1/cate2/cate3",art.cate);
     if(["cate1","cate2","cate3"].includes(targetCate)){
         art.cate = targetCate;
         renderManageArticle();
         renderArticleList();
-    }else{
-        alert("分类格式错误");
     }
 }
 </script>
