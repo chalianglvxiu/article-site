@@ -2,148 +2,440 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 手机适配核心标签 -->
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,user-scalable=no">
-    <title>文章分享平台</title>
+    <title>山茶的文集</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: sans-serif;
+            font-family: "宋体", SimSun, serif;
         }
         body {
+            background: #F8F5F0;
+            color: #333;
+            line-height: 2;
+            font-size: 16px;
+        }
+        .container {
             width: 100vw;
             overflow-x: hidden;
-            background: #f5f5f5;
         }
-        /* 容器强制手机纵向布局 */
-        .container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            min-height: 100vh;
+        .header {
+            background: #EFEBE3;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #DCD4C8;
+            font-size: 19px;
+            color: #5C554B;
+            letter-spacing: 1px;
         }
-        /* 侧边栏置顶横向排布 */
-        .sidebar {
+        .search {
+            padding: 10px 12px;
+            background: #fff;
+        }
+        .search input {
             width: 100%;
-            height: auto;
             padding: 10px;
-            border-right: none;
-            border-bottom: 1px solid #e5e5e5;
+            border: 1px solid #D5CEC1;
+            border-radius: 6px;
+            background: #FDFBF7;
+            font-size: 15px;
+        }
+        .toolbar {
             display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #fff;
+            border-bottom: 1px solid #E5DFD5;
             flex-wrap: wrap;
             gap: 8px;
-            background: #fff;
         }
-        /* 主体内容全屏适配 */
-        .main-content {
-            flex: 1;
-            width: 100%;
-            padding: 12px;
+        .btn {
+            padding: 7px 12px;
+            border: 1px solid #D5CEC1;
+            background: #FDFBF7;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #555;
         }
-        /* 文章网格手机两列布局 */
-        .article-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+        .article-list {
+            padding: 10px 14px;
         }
-        /* 文章卡片样式 */
-        .article-card {
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        .article-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #EAE3D7;
+            cursor: pointer;
         }
-        .article-cover {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-        }
-        .article-info {
-            padding: 8px;
+        .article-page {
+            display: none;
+            padding: 14px;
         }
         .article-title {
-            font-size: 14px;
-            margin-bottom: 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            text-align: center;
+            font-size: 18px;
+            margin: 10px 0 20px;
         }
-        .article-desc {
-            font-size: 12px;
+        .article-content {
+            font-size: 16px;
+            text-align: justify;
+            text-indent: 2em;
+        }
+        .highlight {
+            background: #fff3cd;
+            cursor: pointer;
+        }
+        .comment-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 999;
+        }
+        .comment-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .comment-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+        .comment-item {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #E5DFD5;
+        }
+        .comment-author {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .comment-opt {
+            margin-top: 6px;
+            font-size: 13px;
             color: #666;
         }
-        /* 按钮、导航触控优化 */
-        button, .nav-item, .category-item {
-            min-height: 40px;
-            padding: 0 12px;
-            font-size: 15px;
-            border: none;
-            border-radius: 6px;
-            background: #409eff;
-            color: #fff;
+        .comment-opt span {
+            margin-right: 12px;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
-        button:active {
-            opacity: 0.8;
-        }
-        /* 弹窗、表单自适应 */
-        .modal {
-            width: 90%;
-            margin: 0 auto;
-            border-radius: 10px;
+        .author-panel {
+            display: none;
+            padding: 14px;
         }
         input, textarea, select {
             width: 100%;
             padding: 10px;
             margin: 6px 0;
-            border: 1px solid #ddd;
+            border: 1px solid #D5CEC1;
             border-radius: 6px;
+            background: #fff;
             font-size: 15px;
+        }
+        textarea {
+            height: 220px;
+        }
+        .manage-item {
+            background: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border: 1px solid #E5DFD5;
+        }
+        .bottom-bar {
+            text-align:center;
+            padding:10px;
+            background:#fff;
+            border-top:1px solid #eee;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- 侧边导航栏 -->
-    <div class="sidebar">
-        <div class="category-item">全部文章</div>
-        <div class="category-item">分类一</div>
-        <div class="category-item">分类二</div>
-        <button onclick="addArticle()">发布文章</button>
+    <div class="header">山茶的文集</div>
+
+    <div class="search">
+        <input type="text" placeholder="搜索文章标题" oninput="searchArticle()">
     </div>
 
-    <!-- 主内容区 -->
-    <div class="main-content">
-        <div class="article-grid">
-            <!-- 示例文章卡片，原有文章数据全部保留即可 -->
-            <div class="article-card">
-                <img class="article-cover" src="https://picsum.photos/400/200" alt="封面">
-                <div class="article-info">
-                    <div class="article-title">示例文章标题</div>
-                    <div class="article-desc">简短内容简介</div>
-                </div>
-            </div>
-            <div class="article-card">
-                <img class="article-cover" src="https://picsum.photos/400/201" alt="封面">
-                <div class="article-info">
-                    <div class="article-title">日常随笔记录</div>
-                    <div class="article-desc">生活感悟分享</div>
-                </div>
-            </div>
+    <div class="toolbar">
+        <div class="cate-group">
+            <button class="btn" onclick="filterCate('all')">全部</button>
+            <button class="btn" onclick="filterCate('cate1')">短篇</button>
+            <button class="btn" onclick="filterCate('cate2')">中篇</button>
+            <button class="btn" onclick="filterCate('cate3')">长篇</button>
         </div>
+        <div class="sort-group">
+            <button class="btn" onclick="sortNew()">最新发布</button>
+            <button class="btn" onclick="sortOld()">最早发布</button>
+        </div>
+    </div>
+
+    <div class="article-list" id="articleList"></div>
+
+    <div class="article-page" id="articlePage">
+        <button class="btn comment-toggle" onclick="toggleHighlight()">关闭划线评</button>
+        <div class="article-title" id="artTitle"></div>
+        <div class="article-content" id="artContent"></div>
+
+        <div class="comment-section">
+            <textarea class="comment-input" id="newCommentInput" placeholder="写下你的评论..."></textarea>
+            <button class="btn" onclick="submitComment()">发表评论</button>
+            <div id="commentList"></div>
+        </div>
+        <br>
+        <button class="btn" onclick="backToList()">返回列表</button>
+    </div>
+
+    <div class="author-panel" id="authorPanel">
+        <h3>作者编辑后台</h3>
+        <input placeholder="文章标题" id="titleInput">
+        <select id="cateSelect">
+            <option value="cate1">短篇</option>
+            <option value="cate2">中篇</option>
+            <option value="cate3">长篇</option>
+        </select>
+        <textarea id="contentInput" placeholder="撰写文章内容"></textarea>
+        <button class="btn" onclick="autoIndent()">一键段落缩进</button>
+        <button class="btn" onclick="saveArticle()">保存文章</button>
+        <button class="btn" onclick="clearEditForm()">清空编辑框</button>
+        <hr style="margin:16px 0;border:0;border-top:1px solid #ddd;">
+        <h3>文章管理</h3>
+        <div id="manageList"></div>
+        <br>
+        <button class="btn" onclick="exitAuthorMode()">退出作者模式</button>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="btn" onclick="verifyPwd()">进入作者模式</button>
     </div>
 </div>
 
 <script>
-// 原有所有业务功能JS代码原样粘贴此处
-// 发布、编辑、删除、评论、分类筛选、导入导出等逻辑完全不变
-function addArticle(){
-    alert("发布文章功能正常可用");
+let articles = [];
+let currentCate = "all";
+let sortType = "new";
+let currentArtId = null;
+let editArtId = null;
+let highlightOpen = true;
+const authorPwd = "shanchatea";
+
+document.addEventListener("DOMContentLoaded", renderArticleList);
+
+function renderArticleList(){
+    let showList = [...articles];
+    if(sortType === "new") showList.reverse();
+    if(currentCate !== "all") showList = showList.filter(item=>item.cate === currentCate);
+    const listDom = document.getElementById("articleList");
+    listDom.innerHTML = "";
+    showList.forEach(art=>{
+        let div = document.createElement("div");
+        div.className = "article-item";
+        div.innerText = art.title;
+        div.onclick = ()=>openArticle(art.id);
+        listDom.appendChild(div);
+    });
+}
+
+function filterCate(cate){
+    currentCate = cate;
+    renderArticleList();
+}
+function sortNew(){sortType="new";renderArticleList();}
+function sortOld(){sortType="old";renderArticleList();}
+
+function searchArticle(){
+    let key = document.querySelector(".search input").value.trim();
+    let searchList = articles.filter(item=>item.title.includes(key));
+    if(sortType === "new") searchList.reverse();
+    const listDom = document.getElementById("articleList");
+    listDom.innerHTML = "";
+    searchList.forEach(art=>{
+        let div = document.createElement("div");
+        div.className = "article-item";
+        div.innerText = art.title;
+        div.onclick = ()=>openArticle(art.id);
+        listDom.appendChild(div);
+    });
+}
+
+function toggleHighlight(){
+    highlightOpen = !highlightOpen;
+    let btn = document.querySelector(".comment-toggle");
+    btn.innerText = highlightOpen ? "关闭划线评" : "开启划线评";
+    if(currentArtId){
+        let art = articles.find(a=>a.id===currentArtId);
+        document.getElementById("artContent").innerHTML = formatContent(art.content);
+    }
+}
+function formatContent(text){
+    if(!highlightOpen) return text;
+    return text.split("。").map(s=>`<span class="highlight">${s}。</span>`).join("");
+}
+
+function openArticle(id){
+    currentArtId = id;
+    let art = articles.find(item=>item.id===id);
+    document.querySelector(".article-list").style.display = "none";
+    document.getElementById("articlePage").style.display = "block";
+    document.getElementById("artTitle").innerText = art.title;
+    document.getElementById("artContent").innerHTML = formatContent(art.content);
+    renderCommentList(art.comments);
+}
+function backToList(){
+    document.getElementById("articlePage").style.display = "none";
+    document.querySelector(".article-list").style.display = "block";
+    currentArtId = null;
+}
+
+function submitComment(){
+    let inputDom = document.getElementById("newCommentInput");
+    let content = inputDom.value.trim();
+    if(!content || !currentArtId) return;
+    let art = articles.find(item=>item.id===currentArtId);
+    art.comments.push({
+        cid: Date.now(),
+        name: "读者",
+        content: content,
+        isAuthor: false
+    });
+    renderCommentList(art.comments);
+    inputDom.value = "";
+}
+function renderCommentList(commentArr){
+    let commentDom = document.getElementById("commentList");
+    commentDom.innerHTML = "";
+    commentArr.forEach(comm=>{
+        let item = document.createElement("div");
+        item.className = "comment-item";
+        item.innerHTML = `
+            <div class="comment-author">${comm.isAuthor ? "作者山茶" : comm.name}</div>
+            <div>${comm.content}</div>
+            <div class="comment-opt">
+                <span onclick="replyComment(${comm.cid})">回复</span>
+                <span onclick="delSelfComment(${comm.cid})">删除</span>
+            </div>
+        `;
+        commentDom.appendChild(item);
+    });
+}
+function replyComment(cid){
+    let replyTxt = prompt("输入回复内容：");
+    if(!replyTxt) return;
+    let art = articles.find(item=>item.id===currentArtId);
+    art.comments.push({
+        cid: Date.now(),
+        name: "读者",
+        content: replyTxt,
+        isAuthor: false
+    });
+    renderCommentList(art.comments);
+}
+function delSelfComment(cid){
+    let art = articles.find(item=>item.id===currentArtId);
+    art.comments = art.comments.filter(c=>c.cid!==cid);
+    renderCommentList(art.comments);
+}
+
+function verifyPwd(){
+    let pwd = prompt("请输入作者密码");
+    if(pwd === authorPwd){
+        document.querySelector(".container").style.display = "none";
+        document.getElementById("authorPanel").style.display = "block";
+        renderManageArticle();
+    }else{
+        alert("密码错误");
+    }
+}
+function exitAuthorMode(){
+    location.reload();
+}
+
+function saveArticle(){
+    let title = document.getElementById("titleInput").value.trim();
+    let cate = document.getElementById("cateSelect").value;
+    let content = document.getElementById("contentInput").value.trim();
+    if(!title || !content){
+        alert("标题和内容不能为空");
+        return;
+    }
+    if(editArtId){
+        let art = articles.find(item=>item.id===editArtId);
+        art.title = title;
+        art.cate = cate;
+        art.content = content;
+    }else{
+        articles.push({
+            id: Date.now(),
+            title: title,
+            cate: cate,
+            content: content,
+            comments: []
+        });
+    }
+    clearEditForm();
+    renderArticleList();
+    renderManageArticle();
+    alert("文章保存成功");
+}
+function clearEditForm(){
+    document.getElementById("titleInput").value = "";
+    document.getElementById("contentInput").value = "";
+    document.getElementById("cateSelect").value = "cate1";
+    editArtId = null;
+}
+function autoIndent(){
+    let textDom = document.getElementById("contentInput");
+    let lines = textDom.value.split("\n");
+    let newLines = lines.map(line=>line.trim() ? "　　"+line.trim() : line);
+    textDom.value = newLines.join("\n");
+}
+
+function renderManageArticle(){
+    let manageDom = document.getElementById("manageList");
+    manageDom.innerHTML = "";
+    articles.forEach(art=>{
+        let item = document.createElement("div");
+        item.className = "manage-item";
+        item.innerHTML = `
+            <div>${art.title}【${art.cate}】</div>
+            <div style="margin-top:6px">
+                <button class="btn" onclick="editArticle(${art.id})">编辑</button>
+                <button class="btn" onclick="deleteArticle(${art.id})">删除</button>
+                <button class="btn" onclick="moveCateArticle(${art.id})">移动分类</button>
+            </div>
+        `;
+        manageDom.appendChild(item);
+    });
+}
+function editArticle(id){
+    let art = articles.find(item=>item.id===id);
+    document.getElementById("titleInput").value = art.title;
+    document.getElementById("cateSelect").value = art.cate;
+    document.getElementById("contentInput").value = art.content;
+    editArtId = id;
+}
+function deleteArticle(id){
+    articles = articles.filter(item=>item.id!==id);
+    renderManageArticle();
+    renderArticleList();
+}
+function moveCateArticle(id){
+    let art = articles.find(item=>item.id===id);
+    let targetCate = prompt("输入目标分类：cate1/cate2/cate3",art.cate);
+    if(["cate1","cate2","cate3"].includes(targetCate)){
+        art.cate = targetCate;
+        renderManageArticle();
+        renderArticleList();
+    }else{
+        alert("分类格式错误");
+    }
 }
 </script>
 </body>
